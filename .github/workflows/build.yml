@@ -1,3 +1,4 @@
+# --- عائشہ AI اینڈرائیڈ APK بلڈ ورک فلو (STABLE AUTO-INSTALL) ---
 name: Build Ayesha AI APK
 
 on:
@@ -31,22 +32,17 @@ jobs:
         pip install --upgrade pip
         pip install buildozer kivy cython
 
-    # --- یہ نیا حصہ ہے جو AIDL کا مسئلہ حل کرے گا ---
-    - name: Pre-install Android Build Tools
+    # --- خودکار طریقے سے اینڈرائیڈ ٹولز سیٹ اپ کرنا ---
+    - name: Set up Android SDK
       run: |
-        # بلڈوزر کے فولڈر بنائیں
-        mkdir -p /home/runner/.buildozer/android/platform/android-sdk/build-tools
-        # گوگل سے اینڈرائیڈ ٹولز ڈاؤن لوڈ کریں
-        wget https://dl.google.com/android/repository/build-tools_r31.0.0-linux.zip
-        # فائل کو ان زپ کریں
-        unzip build-tools_r31.0.0-linux.zip
-        # فولڈر کو صحیح جگہ پر منتقل کریں
-        mv android-12 /home/runner/.buildozer/android/platform/android-sdk/build-tools/31.0.0
-        # صفائی کریں
-        rm build-tools_r31.0.0-linux.zip
+        # یہاں ہم بلڈوزر کو خود فائلیں ڈاؤن لوڈ کرنے دیں گے، بس لائسنس ایگری کریں گے
+        mkdir -p ~/.android
+        touch ~/.android/repositories.cfg
+        yes | buildozer android debug --setup-only
 
     - name: Build with Buildozer
       run: |
+        # 'yes |' ڈالنا ضروری ہے تاکہ لائسنس خود بخود Accept ہو جائیں
         yes | buildozer android debug
       env:
         ANDROID_SDK_LICENSE_AGREED: 'yes'
