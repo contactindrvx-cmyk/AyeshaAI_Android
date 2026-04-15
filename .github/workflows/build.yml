@@ -1,4 +1,4 @@
-# --- عائشہ AI اینڈرائیڈ APK بلڈ ورک فلو (CYTHON FIX) ---
+# --- عائشہ AI اینڈرائیڈ APK بلڈ ورک فلو (STABLE FIX) ---
 name: Build Ayesha AI APK
 
 on:
@@ -30,7 +30,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev ant openjdk-17-jdk
         pip install --upgrade pip
-        # FIX: Cython is strictly required for building the APK
         pip install buildozer kivy cython
 
     - name: Build with Buildozer
