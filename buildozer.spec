@@ -9,7 +9,7 @@ presplash.filename = presplash.mp4
 version = 1.0.0
 requirements = python3,kivy
 
-# (یہ حصہ بہت اہم ہے، اسے غور سے بدلیں)
+# --- ورژن فکس کرنے کا اہم حصہ ---
 android.permissions = INTERNET, RECORD_AUDIO, FOREGROUND_SERVICE
 android.api = 31
 android.minapi = 21
