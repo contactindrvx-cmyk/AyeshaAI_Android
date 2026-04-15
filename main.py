@@ -1,15 +1,16 @@
 import os
 from kivy.app import App
-from kivy.uix.webview import WebView
-from kivy.core.window import Window
+from kivy.uix.label import Label
+from kivy.uix.boxlayout import BoxLayout
+from kivy.webbrowser import open_url
 
 class AyeshaAI(App):
     def build(self):
-        # ہگنگ فیس کا وہ یو آر ایل جو ہم نے پہلے استعمال کیا تھا
-        # اسے 'WebView' کے ذریعے لوڈ کریں گے تاکہ کوئی ایرر نہ آئے
-        url = "https://raza-ayesha-ai.hf.space" 
-        webview = WebView(url=url, enable_javascript=True, enable_plugins=True)
-        return webview
+        # یہ براہ راست براؤزر میں کھول دے گا تاکہ ایپ کریش نہ ہو
+        open_url("https://raza-ayesha-ai.hf.space")
+        layout = BoxLayout()
+        layout.add_widget(Label(text="Ayesha AI is loading in your browser..."))
+        return layout
 
 if __name__ == "__main__":
     AyeshaAI().run()
