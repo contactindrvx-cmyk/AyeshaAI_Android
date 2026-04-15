@@ -1,4 +1,3 @@
-# --- عائشہ AI اینڈرائیڈ APK بلڈ ورک فلو (STABLE AUTO-INSTALL) ---
 name: Build Ayesha AI APK
 
 on:
@@ -25,32 +24,24 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Install Build Dependencies
+    - name: Install Dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev ant openjdk-17-jdk
         pip install --upgrade pip
         pip install buildozer kivy cython
 
-    # --- خودکار طریقے سے اینڈرائیڈ ٹولز سیٹ اپ کرنا ---
-    - name: Set up Android SDK
-      run: |
-        # یہاں ہم بلڈوزر کو خود فائلیں ڈاؤن لوڈ کرنے دیں گے، بس لائسنس ایگری کریں گے
-        mkdir -p ~/.android
-        touch ~/.android/repositories.cfg
-        yes | buildozer android debug --setup-only
-
     - name: Build with Buildozer
       run: |
-        # 'yes |' ڈالنا ضروری ہے تاکہ لائسنس خود بخود Accept ہو جائیں
+        # یہ کمانڈ خودکار طریقے سے اینڈرائیڈ ایس ڈی کے سیٹ اپ کرے گی
         yes | buildozer android debug
       env:
         ANDROID_SDK_LICENSE_AGREED: 'yes'
         ACCEPT_LICENSES: 'yes'
 
-    - name: Upload APK Artifact
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: Ayesha_AI_Debug_APK
+        name: Ayesha_AI_App
         path: bin/*.apk
         
