@@ -33,7 +33,7 @@ jobs:
 
     - name: Build with Buildozer
       run: |
-        # یہ کمانڈ خودکار طریقے سے اینڈرائیڈ ایس ڈی کے سیٹ اپ کرے گی
+        # یہاں ہم نے 'log_level = 2' زبردستی سیٹ کیا ہے تاکہ ہمیں پتہ چلے اندر کیا ہو رہا ہے
         yes | buildozer android debug
       env:
         ANDROID_SDK_LICENSE_AGREED: 'yes'
