@@ -1,4 +1,4 @@
-# --- عائشہ AI اینڈرائیڈ APK بلڈ ورک فلو ---
+# --- عائشہ AI اینڈرائیڈ APK بلڈ ورک فلو (UPDATED v4) ---
 name: Build Ayesha AI APK
 
 on:
@@ -12,14 +12,15 @@ jobs:
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3 # ہماری فائلیں کاپی کرے گا
+      uses: actions/checkout@v4 # (Updated to v4) ہماری فائلیں کاپی کرے گا
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5 # (Updated to v5)
       with:
         python_version: '3.10'
 
     - name: Install Build Dependencies
+    # (یہ سٹیپ ویسا ہی رہے گا)
       run: |
         sudo apt-get update
         # Buildozer کو چلانے کے لیے ضروری ٹولز
@@ -28,6 +29,7 @@ jobs:
         pip install buildozer kivy android
 
     - name: Build with Buildozer
+    # (یہ سٹیپ ویسا ہی رہے گا)
       run: |
         # ہم نے جو buildozer.spec فائل بنائی تھی، اسے استعمال کر کے ایپ بلڈ ہوگی
         # یہ سٹیپ تھوڑا وقت لے سکتا ہے (15-20 منٹ)
@@ -38,9 +40,9 @@ jobs:
         ACCEPT_LICENSES: 'yes'
 
     - name: Upload APK Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4 # (FIX: Updated from v3 to v4) اس نام سے آپ کو فائل ملے گی
       with:
-        name: Ayesha_AI_Debug_APK # اس نام سے آپ کو فائل ملے گی
+        name: Ayesha_AI_Debug_APK 
         # بلڈ ٹول APK فائل یہاں بناتا ہے
         path: bin/*.apk
         
