@@ -1,29 +1,24 @@
 [app]
-# (ایپ کی بنیادی معلومات)
 title = Ayesha AI
 package.name = ayesha.ai.assistant
 package.domain = okara.punjab
-
-# (فائلیں اور آئیکن)
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json,xml,mp4
 icon.filename = icon.png
-# لوڈنگ اسکرین کے لیے ویڈیو
 presplash.filename = presplash.mp4
-
-# (ورژن)
 version = 1.0.0
-
-# (پرمیشنز)
-android.permissions = INTERNET, RECORD_AUDIO, FOREGROUND_SERVICE
-
-# (اینڈرائیڈ سیٹنگز)
-android.api = 33
-android.minapi = 21
-android.fullscreen = 1
-
-# (لائبریریاں)
 requirements = python3,kivy
+
+# (یہ حصہ بہت اہم ہے، اسے غور سے بدلیں)
+android.permissions = INTERNET, RECORD_AUDIO, FOREGROUND_SERVICE
+android.api = 31
+android.minapi = 21
+android.sdk = 31
+android.ndk = 25b
+android.build_tools_version = 31.0.0
+android.accept_sdk_license = True
+android.fullscreen = 1
+android.archs = armeabi-v7a, arm64-v8a
 
 [buildozer]
 log_level = 2
