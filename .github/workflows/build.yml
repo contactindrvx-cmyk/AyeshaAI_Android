@@ -1,26 +1,26 @@
-# --- عائشہ AI اینڈرائیڈ APK بلڈ ورک فلو (ULTIMATE FIX for android package) ---
+# --- عائشہ AI اینڈرائیڈ APK بلڈ ورک فلو (CYTHON FIX) ---
 name: Build Ayesha AI APK
 
 on:
   push:
-    branches: [ "main" ] # جب بھی مین برانچ پر پش ہوگا، یہ چلے گا
-  workflow_dispatch: # یا آپ اسے خود بھی چلا سکتے ہیں
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest # گٹ ہب کے کمپیوٹر کا نام
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4 # (v4) ہماری فائلیں کاپی کرے گا
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v5 # (v5)
+      uses: actions/setup-python@v5
       with:
         python_version: '3.10'
 
     - name: Set up JDK 17
-      uses: actions/setup-java@v4 # (v4) بلڈ کرنے کے لیے جاوا
+      uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
@@ -28,27 +28,21 @@ jobs:
     - name: Install Build Dependencies
       run: |
         sudo apt-get update
-        # Buildozer کو چلانے کے لیے ضروری ٹولز (FIXed dependencies list)
         sudo apt-get install -y git zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev ant openjdk-17-jdk
         pip install --upgrade pip
-        # FIX: We only need buildozer and kivy. 'android' package causes issues on newer Python.
-        pip install buildozer kivy
+        # FIX: Cython is strictly required for building the APK
+        pip install buildozer kivy cython
 
     - name: Build with Buildozer
-    # (یہ سٹیپ ویسا ہی رہے گا)
       run: |
-        # ہم نے جو buildozer.spec فائل بنائی تھی، اسے استعمال کر کے ایپ بلڈ ہوگی
-        # یہ سٹیپ تھوڑا وقت لے سکتا ہے (15-20 منٹ)
         buildozer android debug
       env:
-        # اینڈرائیڈ SDK/NDK کو قبول کرنے کے لیے
         ANDROID_SDK_LICENSE_AGREED: 'yes'
         ACCEPT_LICENSES: 'yes'
 
     - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4 # (v4) اس نام سے آپ کو فائل ملے گی
+      uses: actions/upload-artifact@v4
       with:
-        name: Ayesha_AI_Debug_APK # APK فائل کا نام
-        # بلڈ ٹول APK فائل یہاں بناتا ہے
+        name: Ayesha_AI_Debug_APK
         path: bin/*.apk
         
