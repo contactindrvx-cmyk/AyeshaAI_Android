@@ -5,26 +5,20 @@ package.domain = com.raza.alian
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
-icon.filename = %(source.dir)s/icon.png
-
-# --- گوگل لائبریری ہٹا کر صرف requests رکھا گیا ہے ---
-requirements = python3, kivy==2.3.0, kivymd==1.2.0, requests, urllib3, certifi, charset-normalizer, idna, plyer
-
 orientation = portrait
 fullscreen = 0
-android.archs = arm64-v8a
-android.allow_backup = True
 
-# پرمیشنز
-android.permissions = INTERNET, RECORD_AUDIO
+# --- تمام ضروری لائبریریز یہاں شامل ہیں ---
+requirements = python3, kivy==2.3.0, kivymd==1.2.0, requests, certifi, urllib3, chardet, idna, plyer
 
-# --- سٹیبل اینڈرائیڈ سیٹنگز (API 34) ---
+# --- اینڈرائیڈ سیٹنگز ---
 android.api = 34
 android.minapi = 24
 android.sdk = 34
 android.ndk = 25b
-android.ndk_api = 24
-android.skip_update = False
+android.archs = arm64-v8a
+android.permissions = INTERNET, RECORD_AUDIO
+android.enable_androidx = True
 android.accept_sdk_license = True
 android.entrypoint = main.py
 
