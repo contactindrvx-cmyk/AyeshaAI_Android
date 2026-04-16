@@ -1,6 +1,6 @@
 [app]
 # آپ کا ہائی رینکنگ کی ورڈ والا ٹائٹل
-title = Alien AI Chat & Assistant
+title = Alien AI Chat And Assistant
 package.name = alienchat
 package.domain = com.raza.alien
 source.dir = .
