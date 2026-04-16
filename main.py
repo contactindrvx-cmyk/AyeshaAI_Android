@@ -1,7 +1,4 @@
 import os
-import certifi
-os.environ['SSL_CERT_FILE'] = certifi.where()
-
 from kivy.metrics import dp
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
@@ -12,7 +9,9 @@ from kivymd.uix.button import MDIconButton
 from kivymd.uix.card import MDCard
 import google.generativeai as genai
 from plyer import tts
+import certifi
 
+# آپ کی 3 ورکنگ API کیز
 API_KEYS = [
     "AIzaSyBuhS0ZC2tg370mo-nQW-_zKY_OUMFAGdo", 
     "AIzaSyD_DqBfz2wJtpEfbw1lf25GZOi_nkzouXo",
@@ -21,12 +20,19 @@ API_KEYS = [
 
 class AlianAI(MDApp):
     def build(self):
+        # SSL فکس: ایپ کے پوری طرح لوڈ ہونے کے بعد اسے چلائیں
+        try:
+            os.environ['SSL_CERT_FILE'] = certifi.where()
+        except Exception:
+            pass
+            
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "Blue"
         
         screen = MDScreen()
         main_layout = MDBoxLayout(orientation='vertical')
         
+        # ہیڈر
         self.toolbar = MDTopAppBar(
             title="Alian AI",
             elevation=4,
@@ -35,6 +41,7 @@ class AlianAI(MDApp):
         )
         main_layout.add_widget(self.toolbar)
         
+        # چیٹ ایریا
         self.chat_area = MDBoxLayout(orientation='vertical', padding=dp(15), spacing=dp(10))
         
         self.message_card = MDCard(
@@ -47,7 +54,7 @@ class AlianAI(MDApp):
         )
         
         self.response_label = MDTextField(
-            text="سلام رضا بھائی! میں Alian ہوں۔ آپ کے Android 16 کے لیے تیار ہوں۔",
+            text="سلام رضا بھائی! میں Alian ہوں۔ بتائیے میں آپ کی کیا مدد کروں؟",
             readonly=True,
             multiline=True,
             font_size="17sp",
@@ -56,6 +63,7 @@ class AlianAI(MDApp):
         )
         self.message_card.add_widget(self.response_label)
         
+        # سپیکر بٹن
         self.speaker_btn = MDIconButton(
             icon="volume-high",
             theme_text_color="Custom",
@@ -68,6 +76,7 @@ class AlianAI(MDApp):
         self.chat_area.add_widget(self.message_card)
         main_layout.add_widget(self.chat_area)
         
+        # ان پٹ ایریا
         input_layout = MDBoxLayout(orientation='horizontal', size_hint_y=None, height=dp(70), padding=dp(10), spacing=dp(5))
         self.input_text = MDTextField(hint_text="Alian سے بات کریں...", mode="fill", size_hint_x=0.85)
         send_btn = MDIconButton(icon="send", on_release=self.ask_alian, icon_size="30sp")
@@ -89,18 +98,19 @@ class AlianAI(MDApp):
         for key in API_KEYS:
             try:
                 genai.configure(api_key=key)
-                model = genai.GenerativeModel('gemini-2.5-flash')
+                # یہاں آپ کا ورکنگ ماڈل 1.5 فلیش (جو سب سے تیز ہے) استعمال ہو رہا ہے
+                model = genai.GenerativeModel('gemini-1.5-flash')
                 response = model.generate_content(user_query)
                 self.response_label.text = response.text
                 return
             except Exception:
                 continue
-        self.response_label.text = "رابطہ کرنے میں مشکل ہو رہی ہے۔"
+        self.response_label.text = "معذرت، رابطہ کرنے میں مشکل ہو رہی ہے۔"
 
     def speak_message(self, instance):
         try:
             tts.speak(self.response_label.text)
-        except:
+        except Exception:
             pass
 
 if __name__ == "__main__":
