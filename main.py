@@ -1,107 +1,52 @@
 import os
-import sys
+from kivy.app import App
+from kivy.uix.widget import Widget
+from kivy.clock import Clock
+from kivy.utils import platform
 
-# --- اینڈرائیڈ 16 گرافکس بائی پاس (سب سے اوپر) ---
+# اینڈرائیڈ 16 گرافکس فکس
 os.environ['KIVY_GRAPHICS'] = 'gles'
 os.environ['KIVY_GL_BACKEND'] = 'sdl2'
 
-from kivy.config import Config
-Config.set('graphics', 'multisamples', '0')
-Config.set('graphics', 'backend', 'sdl2')
+if platform == 'android':
+    from jnius import autoclass
+    from android.runnable import run_on_ui_thread
+    WebView = autoclass('android.webkit.WebView')
+    WebViewClient = autoclass('android.webkit.WebViewClient')
+    WebChromeClient = autoclass('android.webkit.WebChromeClient')
+    activity = autoclass('org.kivy.android.PythonActivity').mActivity
+else:
+    # اگر لیپ ٹاپ پر ٹیسٹ کریں تو کریش نہ ہو
+    run_on_ui_thread = lambda x: x
 
-import certifi
-from kivymd.app import MDApp
-from kivymd.uix.screen import MDScreen
-from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.label import MDLabel
-from kivymd.uix.textfield import MDTextField
-from kivymd.uix.button import MDIconButton
-from kivymd.uix.card import MDCard
-from kivy.metrics import dp
-import requests
-from plyer import tts
+class HuggingFaceSpace(Widget):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        Clock.schedule_once(self.create_webview, 0)
 
-# SSL فکس
-try:
-    os.environ['SSL_CERT_FILE'] = certifi.where()
-except:
-    pass
+    @run_on_ui_thread
+    def create_webview(self, *args):
+        if platform == 'android':
+            webview = WebView(activity)
+            settings = webview.getSettings()
+            
+            # ویب سائٹ کو صحیح چلانے کے لیے ضروری سیٹنگز
+            settings.setJavaScriptEnabled(True)
+            settings.setDomStorageEnabled(True)
+            settings.setMediaPlaybackRequiresUserGesture(False)
+            
+            webview.setWebViewClient(WebViewClient())
+            webview.setWebChromeClient(WebChromeClient())
+            
+            # رضا بھائی، یہ آپ کے ہگنگ فیس کا ڈائریکٹ لنک ہے
+            webview.loadUrl('https://huggingface.co/spaces/aigrowthbox/ayesha-ai')
+            
+            activity.setContentView(webview)
 
-class AlianAI(MDApp):
+class AlianAI(App):
     def build(self):
-        # اینڈرائیڈ 16 کے لیے تھیم کا پکا حل
-        self.theme_cls.theme_style = "Dark"
-        self.theme_cls.primary_palette = "Blue"
-        self.theme_cls.material_style = "M3"
-        
-        # مین سکرین
-        screen = MDScreen()
-        layout = MDBoxLayout(orientation='vertical', padding=dp(10))
-        
-        # ہیڈر (سادہ لیکن پکا)
-        header = MDLabel(
-            text="Alian AI 2.5",
-            halign="center",
-            size_hint_y=None,
-            height=dp(60),
-            font_style="H5",
-            theme_text_color="Primary"
-        )
-        layout.add_widget(header)
-        
-        # میسج ایریا
-        self.msg_card = MDCard(
-            orientation='vertical',
-            padding=dp(15),
-            radius=[15,],
-            md_bg_color=(0.12, 0.12, 0.18, 1)
-        )
-        
-        self.response_label = MDTextField(
-            text="سلام رضا بھائی! اگر آپ یہ دیکھ پا رہے ہیں تو ہم جیت گئے ہیں۔ بتائیے کیا حکم ہے؟",
-            readonly=True,
-            multiline=True,
-            mode="fill",
-            fill_color_normal=(0,0,0,0)
-        )
-        self.msg_card.add_widget(self.response_label)
-        layout.add_widget(self.msg_card)
-        
-        # ان پٹ اور بٹن
-        input_box = MDBoxLayout(size_hint_y=None, height=dp(70), spacing=dp(10))
-        self.user_input = MDTextField(hint_text="عائشہ سے پوچھیں...", mode="round")
-        send_btn = MDIconButton(icon="send", on_release=self.ask_alian)
-        
-        input_box.add_widget(self.user_input)
-        input_box.add_widget(send_btn)
-        layout.add_widget(input_box)
-        
-        screen.add_widget(layout)
-        return screen
+        return HuggingFaceSpace()
 
-    def ask_alian(self, instance):
-        query = self.user_input.text.strip()
-        if not query: return
-        self.response_label.text = "عائشہ سوچ رہی ہے..."
-        self.user_input.text = ""
-        
-        api_key = "AIzaSyBuhS0ZC2tg370mo-nQW-_zKY_OUMFAGdo"
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
-        
-        try:
-            res = requests.post(url, json={"contents": [{"parts": [{"text": query}]}]}, timeout=10)
-            if res.status_code == 200:
-                self.response_label.text = res.json()['candidates'][0]['content']['parts'][0]['text']
-            else:
-                self.response_label.text = "سرور مصروف ہے۔"
-        except:
-            self.response_label.text = "انٹرنیٹ چیک کریں۔"
-
-if __name__ == "__main__":
-    try:
-        AlianAI().run()
-    except Exception as e:
-        # اگر ایپ کریش ہو تو ایرر کو ٹیکسٹ فائل میں لکھ دے تاکہ ہم پڑھ سکیں
-        with open("error_log.txt", "w") as f:
-            f.write(str(e))
-        
+if __name__ == '__main__':
+    AlianAI().run()
+    
