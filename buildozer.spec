@@ -1,9 +1,10 @@
 [app]
-title = Ayesha AI
-package.name = ayeshaai
-package.domain = com.raza.ayesha
+# آپ کا ہائی رینکنگ کی ورڈ والا ٹائٹل
+title = Alien AI Chat & Assistant
+package.name = alienchat
+package.domain = com.raza.alien
 source.dir = .
-source.include_exts = py,png,jpg,kv,atlas
+source.include_exts = py,png,jpg,kv,atlas,mp4
 version = 1.0
 
 icon.filename = %(source.dir)s/icon.png
@@ -16,8 +17,8 @@ fullscreen = 0
 android.archs = arm64-v8a
 android.allow_backup = True
 
-# آف لائن انٹیلیجنس کے لیے پرمیشنز
-android.permissions = INTERNET, RECORD_AUDIO, MODIFY_AUDIO_SETTINGS, ACCESS_NETWORK_STATE
+# فلوٹنگ ببل پرمیشن
+android.permissions = INTERNET, RECORD_AUDIO, MODIFY_AUDIO_SETTINGS, ACCESS_NETWORK_STATE, SYSTEM_ALERT_WINDOW
 
 android.api = 34
 android.minapi = 24
