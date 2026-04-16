@@ -1,6 +1,5 @@
 import os
 import certifi
-# SSL سرٹیفکیٹ کا کریش روکنے کے لیے
 os.environ['SSL_CERT_FILE'] = certifi.where()
 
 from kivy.metrics import dp
@@ -14,14 +13,13 @@ from kivymd.uix.card import MDCard
 import google.generativeai as genai
 from plyer import tts
 
-# آپ کی 3 ورکنگ کیز
 API_KEYS = [
     "AIzaSyBuhS0ZC2tg370mo-nQW-_zKY_OUMFAGdo", 
     "AIzaSyD_DqBfz2wJtpEfbw1lf25GZOi_nkzouXo",
     "AIzaSyDFPFHsjz116X430v1oZYgBe-MLY6qinm8"
 ]
 
-class AyeshaAI(MDApp):
+class AlianAI(MDApp):
     def build(self):
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "Blue"
@@ -29,16 +27,14 @@ class AyeshaAI(MDApp):
         screen = MDScreen()
         main_layout = MDBoxLayout(orientation='vertical')
         
-        # 1. پروفیشنل فکسڈ ہیڈر
         self.toolbar = MDTopAppBar(
-            title="Ayesha AI",
+            title="Alian AI",
             elevation=4,
             pos_hint={"top": 1},
             md_bg_color=self.theme_cls.primary_color
         )
         main_layout.add_widget(self.toolbar)
         
-        # 2. میسج ڈسپلے ایریا
         self.chat_area = MDBoxLayout(orientation='vertical', padding=dp(15), spacing=dp(10))
         
         self.message_card = MDCard(
@@ -51,7 +47,7 @@ class AyeshaAI(MDApp):
         )
         
         self.response_label = MDTextField(
-            text="سلام رضا بھائی! میں Gemini 2.5 Flash ماڈل کے ساتھ حاضر ہوں۔",
+            text="سلام رضا بھائی! میں Alian ہوں۔ آپ کے Android 16 کے لیے تیار ہوں۔",
             readonly=True,
             multiline=True,
             font_size="17sp",
@@ -60,7 +56,6 @@ class AyeshaAI(MDApp):
         )
         self.message_card.add_widget(self.response_label)
         
-        # سپیکر بٹن (پروفیشنل SVG آئیکن)
         self.speaker_btn = MDIconButton(
             icon="volume-high",
             theme_text_color="Custom",
@@ -73,10 +68,9 @@ class AyeshaAI(MDApp):
         self.chat_area.add_widget(self.message_card)
         main_layout.add_widget(self.chat_area)
         
-        # 3. ان پٹ بار
         input_layout = MDBoxLayout(orientation='horizontal', size_hint_y=None, height=dp(70), padding=dp(10), spacing=dp(5))
-        self.input_text = MDTextField(hint_text="عائشہ سے بات کریں...", mode="fill", size_hint_x=0.85)
-        send_btn = MDIconButton(icon="send", on_release=self.ask_ayesha, icon_size="30sp")
+        self.input_text = MDTextField(hint_text="Alian سے بات کریں...", mode="fill", size_hint_x=0.85)
+        send_btn = MDIconButton(icon="send", on_release=self.ask_alian, icon_size="30sp")
         
         input_layout.add_widget(self.input_text)
         input_layout.add_widget(send_btn)
@@ -85,24 +79,23 @@ class AyeshaAI(MDApp):
         screen.add_widget(main_layout)
         return screen
 
-    def ask_ayesha(self, instance):
+    def ask_alian(self, instance):
         user_query = self.input_text.text
         if not user_query: return
         
-        self.response_label.text = "سوچ رہی ہوں..."
+        self.response_label.text = "Alian سوچ رہا ہے..."
         self.input_text.text = ""
         
         for key in API_KEYS:
             try:
                 genai.configure(api_key=key)
-                # رضا بھائی یہ دیکھیں! یہاں میں نے آپ کا ورکنگ ماڈل 2.5 فلیش ڈال دیا ہے
                 model = genai.GenerativeModel('gemini-2.5-flash')
                 response = model.generate_content(user_query)
                 self.response_label.text = response.text
                 return
             except Exception:
                 continue
-        self.response_label.text = "معذرت، رابطہ کرنے میں مشکل ہو رہی ہے۔"
+        self.response_label.text = "رابطہ کرنے میں مشکل ہو رہی ہے۔"
 
     def speak_message(self, instance):
         try:
@@ -111,5 +104,5 @@ class AyeshaAI(MDApp):
             pass
 
 if __name__ == "__main__":
-    AyeshaAI().run()
-        
+    AlianAI().run()
+    
