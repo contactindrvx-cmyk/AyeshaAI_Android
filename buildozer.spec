@@ -37,7 +37,7 @@ android.enable_androidx = True
 
 # (بلڈ کے لیے لازمی اجازتیں)
 android.accept_sdk_license = True
-android.entrypoint = main.py
+
 
 [buildozer]
 
