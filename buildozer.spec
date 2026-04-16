@@ -1,58 +1,33 @@
 [app]
-# (str) Title of your application
 title = Ayesha AI
-
-# (str) Package name
 package.name = ayeshaai
-
-# (str) Package domain (needed for android packaging)
-package.domain = org.test
-
-# (str) Source code where the main.py live
+package.domain = com.raza.ayesha
 source.dir = .
+source.include_exts = py,png,jpg,kv,atlas
+version = 0.1
 
-# (list) Source files to include (let empty to include all the files)
-source.include_exts = py,png,jpg,kv,atlas,json,xml,mp4
+# لوگو کی سیٹنگ - جو آپ نے icon.png رکھا ہے
+icon.filename = %(source.dir)s/icon.png
 
-# (str) Application versioning
-version = 1.0.0
+# ضروری ریکوائرمنٹس جو آپ نے کہی تھیں
+requirements = python3, kivy==2.3.0, kivymd==1.2.0, google-generativeai, requests, urllib3, certifi, charset-normalizer, idna
 
-# (list) Application requirements
-requirements = python3,kivy==2.3.0,requests,urllib3,certifi,chardet,idna
-
-# (str) Supported orientation (one of landscape, portrait or all)
 orientation = portrait
-
-# (bool) Indicate if the application should be fullscreen or not
 fullscreen = 0
+android.archs = armeabi-v7a, arm64-v8a
+android.allow_backup = True
 
-# (list) Permissions
-android.permissions = INTERNET, RECORD_AUDIO, CAMERA
+# انٹرنیٹ کی اجازت (تاکہ عائشہ بات کر سکے)
+android.permissions = INTERNET, RECORD_AUDIO
 
-# (int) Target Android API
-android.api = 31
-
-# (int) Minimum API your APK will support
+# اینڈرائیڈ کی سیٹنگز
+android.api = 33
 android.minapi = 21
-
-# (str) Android NDK version to use
+android.sdk = 33
 android.ndk = 25b
-
-# (str) Android build tools version to use
-android.build_tools_version = 31.0.0
-
-# (bool) Skip byte compile for .py files
-android.skip_byte_compile = False
-
-# (bool) Accept Android SDK license
+android.skip_update = False
 android.accept_sdk_license = True
 
-# (list) Architecture to build for
-android.archs = armeabi-v7a, arm64-v8a
-
 [buildozer]
-# (int) Log level (2 = debug)
 log_level = 2
-
-# (int) Display warning if buildozer is run as root
 warn_on_root = 1
