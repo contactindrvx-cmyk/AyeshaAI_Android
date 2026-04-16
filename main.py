@@ -1,4 +1,5 @@
 import os
+import certifi
 from kivy.metrics import dp
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
@@ -7,9 +8,9 @@ from kivymd.uix.toolbar import MDTopAppBar
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.button import MDIconButton
 from kivymd.uix.card import MDCard
-import google.generativeai as genai
+import requests
+import json
 from plyer import tts
-import certifi
 
 # آپ کی 3 ورکنگ API کیز
 API_KEYS = [
@@ -20,7 +21,7 @@ API_KEYS = [
 
 class AlianAI(MDApp):
     def build(self):
-        # SSL فکس: ایپ کے پوری طرح لوڈ ہونے کے بعد اسے چلائیں
+        # SSL فکس: ایپ کو شروع میں بوجھ سے بچانے کے لیے
         try:
             os.environ['SSL_CERT_FILE'] = certifi.where()
         except Exception:
@@ -32,7 +33,7 @@ class AlianAI(MDApp):
         screen = MDScreen()
         main_layout = MDBoxLayout(orientation='vertical')
         
-        # ہیڈر
+        # 1. پروفیشنل فکسڈ ہیڈر
         self.toolbar = MDTopAppBar(
             title="Alian AI",
             elevation=4,
@@ -41,7 +42,7 @@ class AlianAI(MDApp):
         )
         main_layout.add_widget(self.toolbar)
         
-        # چیٹ ایریا
+        # 2. میسج ڈسپلے ایریا
         self.chat_area = MDBoxLayout(orientation='vertical', padding=dp(15), spacing=dp(10))
         
         self.message_card = MDCard(
@@ -53,8 +54,9 @@ class AlianAI(MDApp):
             radius=[15,]
         )
         
+        # Alian کا میسج
         self.response_label = MDTextField(
-            text="سلام رضا بھائی! میں Alian ہوں۔ بتائیے میں آپ کی کیا مدد کروں؟",
+            text="سلام رضا بھائی! میں Alian ہوں۔ اب میں بالکل لائٹ ویٹ ہو چکا ہوں۔ بتائیے کیا مدد کروں؟",
             readonly=True,
             multiline=True,
             font_size="17sp",
@@ -63,7 +65,7 @@ class AlianAI(MDApp):
         )
         self.message_card.add_widget(self.response_label)
         
-        # سپیکر بٹن
+        # پروفیشنل سپیکر بٹن (میسج سننے کے لیے)
         self.speaker_btn = MDIconButton(
             icon="volume-high",
             theme_text_color="Custom",
@@ -76,7 +78,7 @@ class AlianAI(MDApp):
         self.chat_area.add_widget(self.message_card)
         main_layout.add_widget(self.chat_area)
         
-        # ان پٹ ایریا
+        # 3. ان پٹ بار
         input_layout = MDBoxLayout(orientation='horizontal', size_hint_y=None, height=dp(70), padding=dp(10), spacing=dp(5))
         self.input_text = MDTextField(hint_text="Alian سے بات کریں...", mode="fill", size_hint_x=0.85)
         send_btn = MDIconButton(icon="send", on_release=self.ask_alian, icon_size="30sp")
@@ -95,17 +97,24 @@ class AlianAI(MDApp):
         self.response_label.text = "Alian سوچ رہا ہے..."
         self.input_text.text = ""
         
+        # ڈائریکٹ API کال (بغیر بھاری C++ لائبریری کے)
         for key in API_KEYS:
             try:
-                genai.configure(api_key=key)
-                # یہاں آپ کا ورکنگ ماڈل 1.5 فلیش (جو سب سے تیز ہے) استعمال ہو رہا ہے
-                model = genai.GenerativeModel('gemini-1.5-flash')
-                response = model.generate_content(user_query)
-                self.response_label.text = response.text
-                return
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={key}"
+                headers = {'Content-Type': 'application/json'}
+                data = {"contents": [{"parts": [{"text": user_query}]}]}
+                
+                response = requests.post(url, headers=headers, json=data, timeout=10)
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    answer = result['candidates'][0]['content']['parts'][0]['text']
+                    self.response_label.text = answer
+                    return
             except Exception:
                 continue
-        self.response_label.text = "معذرت، رابطہ کرنے میں مشکل ہو رہی ہے۔"
+                
+        self.response_label.text = "معذرت، انٹرنیٹ یا سرور کا مسئلہ ہے۔"
 
     def speak_message(self, instance):
         try:
