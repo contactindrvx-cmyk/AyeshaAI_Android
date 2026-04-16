@@ -7,7 +7,6 @@ on:
 
 jobs:
   build:
-    # پرو ٹپ: ubuntu-latest کی جگہ 22.04 استعمال کر رہے ہیں جو سب سے زیادہ اسٹیبل ہے
     runs-on: ubuntu-22.04
 
     steps:
@@ -22,16 +21,14 @@ jobs:
     - name: Install System Dependencies
       run: |
         sudo apt-get update
-        # غیر ضروری ٹولز ہٹا کر صرف وہ رکھے ہیں جو بلڈوزر کو واقعی چاہیے
         sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev libssl-dev
         pip install --upgrade pip
-        pip install buildozer cython virtualenv
+        # پرو ٹپ: یہاں ہم نے Cython کا ورژن فکس کر دیا ہے تاکہ 'long' والا ایرر نہ آئے
+        pip install buildozer "Cython<3.0" virtualenv
 
     - name: Build with Buildozer
-      # 'yes |' کو ہٹا دیا گیا ہے تاکہ Broken Pipe کا ایرر جڑ سے ختم ہو جائے
       run: buildozer android debug
       env:
-        # یہ کمانڈز خودکار طریقے سے گوگل کے لائسنس قبول کر لیں گی
         ANDROID_SDK_LICENSE_AGREED: 1
         BUILDOZER_WARN_ON_ROOT: 0
 
