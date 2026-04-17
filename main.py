@@ -16,8 +16,9 @@ if platform == 'android':
     Uri = autoclass('android.net.Uri')
     Context = autoclass('android.content.Context')
     Intent = autoclass('android.content.Intent')
+    Toast = autoclass('android.widget.Toast')
 
-    # 🔊 اصلی اینڈرائیڈ سپیکر اور ہارڈویئر کلاسز
+    # 🔊 اصلی گوگل ٹی ٹی ایس (جیمنائی والا سسٹم)
     TextToSpeech = autoclass('android.speech.tts.TextToSpeech')
     Locale = autoclass('java.util.Locale')
     Vibrator = autoclass('android.os.Vibrator')
@@ -30,7 +31,6 @@ if platform == 'android':
     try: MyWebChromeClient = autoclass('org.alien.MyWebChromeClient')
     except: MyWebChromeClient = autoclass('android.webkit.WebChromeClient')
 
-    # 🎤 سپیکر کو ریڈی کرنے کا لسنر
     class TTSInitListener(PythonJavaClass):
         __javainterfaces__ = ['android/speech/tts/TextToSpeech$OnInitListener']
         def __init__(self):
@@ -41,7 +41,6 @@ if platform == 'android':
             if status == TextToSpeech.SUCCESS:
                 self.is_ready = True
 
-    # 🔗 جاوا سکرپٹ سے میسج پکڑنے والا ریسیور
     class JSReceiver(PythonJavaClass):
         __javainterfaces__ = ['android/webkit/ValueCallback']
         def __init__(self, callback):
@@ -51,8 +50,10 @@ if platform == 'android':
         def onReceiveValue(self, value):
             if value and str(value) != 'null':
                 try:
-                    val = json.loads(str(value))
-                    if val != "null": self.callback(val)
+                    val = str(value)
+                    if val.startswith('"') and val.endswith('"'): val = val[1:-1]
+                    val = val.replace('\\n', '\n').replace('\\"', '"')
+                    if val and val != "null": self.callback(val)
                 except: pass
 else:
     run_on_ui_thread = lambda x: x
@@ -65,8 +66,13 @@ class AlienAppBase(Widget):
         self.camera_id = None
         self.wv = None
         if platform == 'android':
-            # کیمرہ اور آڈیو کی پرمیشن
-            request_permissions([Permission.RECORD_AUDIO, Permission.GET_ACCOUNTS, Permission.CAMERA])
+            request_permissions([
+                Permission.RECORD_AUDIO, 
+                Permission.GET_ACCOUNTS, 
+                Permission.CAMERA, 
+                Permission.READ_EXTERNAL_STORAGE, 
+                Permission.WRITE_EXTERNAL_STORAGE
+            ])
             self.init_hardware()
             Clock.schedule_once(self.start_app, 3)
 
@@ -79,11 +85,14 @@ class AlienAppBase(Widget):
         except Exception as e:
             print("Hardware Init Error:", e)
 
+    def show_toast(self, text):
+        if platform == 'android':
+            run_on_ui_thread(lambda: Toast.makeText(activity, text, Toast.LENGTH_SHORT).show())()
+
     def start_app(self, dt):
         if platform == 'android' and Settings.canDrawOverlays(activity):
             self.show_bubble()
         self.load_webview()
-        # ہر آدھے سیکنڈ بعد ویب سائٹ سے کمانڈز پکڑے گا
         if platform == 'android':
             Clock.schedule_interval(self.poll_js_queue, 0.5)
 
@@ -107,7 +116,9 @@ class AlienAppBase(Widget):
         self.wv = WebView(activity)
         self.wv.getSettings().setJavaScriptEnabled(True)
         self.wv.getSettings().setDomStorageEnabled(True) 
+        self.wv.getSettings().setAllowFileAccess(True)
         self.wv.setWebChromeClient(MyWebChromeClient())
+        # ہگنگ فیس والا لنک جو کہ ایپ کا دماغ ہے
         self.wv.loadUrl(f'https://aigrowthbox-ayesha-ai.hf.space?email={email}')
         activity.setContentView(self.wv)
 
@@ -128,15 +139,28 @@ class AlienAppBase(Widget):
 
     def speak_text(self, text):
         if self.tts and self.tts_listener.is_ready:
+            self.show_toast("عائشہ بول رہی ہے...")
             loc = Locale("ur", "PK")
             self.tts.setLanguage(loc)
-            # پرانی آواز بند کر کے نئی شروع کرے گا
-            self.tts.speak(text, TextToSpeech.QUEUE_FLUSH, None, None)
+            self.tts.setPitch(1.0)
+            self.tts.setSpeechRate(1.0)
+            
+            # ⚡ زبردستی پلے کرنے کا بنڈل تاکہ آواز بلاک نہ ہو
+            try:
+                Bundle = autoclass('android.os.Bundle')
+                params = Bundle()
+                self.tts.speak(text, TextToSpeech.QUEUE_FLUSH, params, "1")
+            except:
+                self.tts.speak(text, TextToSpeech.QUEUE_FLUSH, None, "1")
+        else:
+            self.show_toast("سپیکر انجن تیار ہو رہا ہے...")
+            self.init_hardware()
 
     def execute_command(self, cmd):
-        print("Executing Command:", cmd)
         try:
-            if cmd == "CMD_FLASHLIGHT_ON" and self.camera_manager and self.camera_id:
+            if cmd == "CMD_OPEN_GALLERY":
+                self.open_gallery()
+            elif cmd == "CMD_FLASHLIGHT_ON" and self.camera_manager and self.camera_id:
                 self.camera_manager.setTorchMode(self.camera_id, True)
             elif cmd == "CMD_FLASHLIGHT_OFF" and self.camera_manager and self.camera_id:
                 self.camera_manager.setTorchMode(self.camera_id, False)
@@ -144,25 +168,30 @@ class AlienAppBase(Widget):
                 vibrator = activity.getSystemService(Context.VIBRATOR_SERVICE)
                 if vibrator and vibrator.hasVibrator():
                     vibrator.vibrate(500)
-            elif cmd.startswith("CMD_YOUTUBE_SEARCH"):
-                query = cmd.replace("CMD_YOUTUBE_SEARCH", "").strip()
-                intent = Intent(Intent.ACTION_SEARCH)
-                intent.setPackage("com.google.android.youtube")
-                intent.putExtra("query", query)
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                activity.startActivity(intent)
-            elif cmd == "CMD_WHATSAPP_MSG":
-                intent = Intent(Intent.ACTION_MAIN)
-                intent.setAction(Intent.ACTION_SEND)
-                intent.setType("text/plain")
-                intent.setPackage("com.whatsapp")
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                activity.startActivity(intent)
         except Exception as e:
-            print("Command Error:", e)
+            self.show_toast("Command Error: " + str(e))
+
+    def open_gallery(self):
+        try:
+            from plyer import filechooser
+            filechooser.open_file(on_selection=self.handle_image_selection, filters=[("Images", "*.png", "*.jpg", "*.jpeg")])
+        except Exception as e:
+            self.show_toast("Gallery Error: " + str(e))
+
+    def handle_image_selection(self, selection):
+        if selection and len(selection) > 0:
+            filepath = selection[0]
+            import base64
+            try:
+                with open(filepath, "rb") as f:
+                    encoded = base64.b64encode(f.read()).decode("utf-8")
+                js_code = f"receiveImageFromAndroid('data:image/jpeg;base64,{encoded}')"
+                run_on_ui_thread(lambda: self.wv.evaluateJavascript(js_code, None))()
+            except Exception as e:
+                self.show_toast("Image Load Error")
 
 class AlienAIChat(App):
     def build(self): return AlienAppBase()
 
 if __name__ == '__main__': AlienAIChat().run()
-                   
+                
