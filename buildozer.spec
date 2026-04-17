@@ -6,23 +6,17 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,mp4,json
 version = 1.0
 
-# Requirements
 requirements = python3, kivy==2.3.0, pyjnius, android, plyer, hostpython3==3.11.0, urllib3
 
-# App Icon
 icon.filename = %(source.dir)s/icon.png
-
-# Presplash Lottie Animation Settings
 android.presplash_lottie = %(source.dir)s/presplash.json
 android.presplash_color = #FFFFFF
 
 orientation = portrait
 fullscreen = 0
 
-# Permissions
 android.permissions = INTERNET, RECORD_AUDIO, MODIFY_AUDIO_SETTINGS, ACCESS_NETWORK_STATE, CAMERA, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE
 
-# Android API Settings
 android.api = 33
 android.minapi = 24
 android.sdk = 33
