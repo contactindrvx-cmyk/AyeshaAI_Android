@@ -18,8 +18,8 @@ source.include_exts = py,png,jpg,kv,atlas,mp4
 # (str) Application versioning
 version = 1.0
 
-# (list) Application requirements
-requirements = python3, kivy==2.3.0, pyjnius, android
+# 🚀 (list) Application requirements (یہاں plyer کا اضافہ کیا گیا ہے تاکہ گیلری کھل سکے)
+requirements = python3, kivy==2.3.0, pyjnius, android, plyer
 
 # (str) Presplash and Icon
 presplash.filename = %(source.dir)s/icon.png
@@ -31,8 +31,8 @@ orientation = portrait
 # (bool) Fullscreen or not
 fullscreen = 0
 
-# (list) Permissions
-android.permissions = INTERNET, RECORD_AUDIO, MODIFY_AUDIO_SETTINGS, ACCESS_NETWORK_STATE, SYSTEM_ALERT_WINDOW, GET_ACCOUNTS
+# 🔒 (list) Permissions (یہاں CAMERA اور سٹوریج کی پرمیشنز کا اضافہ کیا گیا ہے)
+android.permissions = INTERNET, RECORD_AUDIO, MODIFY_AUDIO_SETTINGS, ACCESS_NETWORK_STATE, SYSTEM_ALERT_WINDOW, GET_ACCOUNTS, CAMERA, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE
 
 # (int) Target Android API
 android.api = 34
