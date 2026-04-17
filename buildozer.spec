@@ -1,21 +1,21 @@
 [app]
 
-# (str) Title of your application
-title = Alien AI Chat
+# (str) Title of your application (ٹائٹل اب بالکل درست ہے)
+title = Alien AI Chat and Assistant
 
 # (str) Package name
 package.name = alienchat
 
-# (str) Package domain (needed for android/ios packaging)
+# (str) Package domain
 package.domain = com.raza.alien
 
 # (str) Source code where the main.py live
 source.dir = .
 
-# (list) Source files to include (اس میں mp4 لازمی ہے)
+# (list) Source files to include
 source.include_exts = py,png,jpg,kv,atlas,mp4
 
-# (str) Application versioning (یہ وہ لائن ہے جس کا ایرر آ رہا تھا)
+# (str) Application versioning
 version = 1.0
 
 # (list) Application requirements
@@ -31,7 +31,7 @@ orientation = portrait
 # (bool) Fullscreen or not
 fullscreen = 0
 
-# (list) Permissions (مائیک، ببل اور اکاؤنٹ کے لیے)
+# (list) Permissions
 android.permissions = INTERNET, RECORD_AUDIO, MODIFY_AUDIO_SETTINGS, ACCESS_NETWORK_STATE, SYSTEM_ALERT_WINDOW, GET_ACCOUNTS
 
 # (int) Target Android API
@@ -44,7 +44,10 @@ android.minapi = 24
 android.sdk = 34
 android.ndk = 25b
 
-# (str) Java source folder (مائیک الرٹ ختم کرنے کے لیے)
+# *** لائسنس کی منظوری ***
+android.accept_sdk_license = True
+
+# (str) Java source folder
 android.add_src = java_src
 
 # (bool) Enable AndroidX
