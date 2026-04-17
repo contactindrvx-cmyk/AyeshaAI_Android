@@ -29,13 +29,17 @@ class AlienAppBase(FloatLayout):
         self.tts = None
         self.wv = None
         self.bubble = None
+        self.is_started = False # نیا چیک
         
-        # 1. لوگو دکھائیں (Alien AI Loading کی جگہ)
+        # 1. لوگو دکھائیں
         self.logo = Image(source='icon.png', pos_hint={'center_x': 0.5, 'center_y': 0.5}, size_hint=(0.5, 0.5))
         self.add_widget(self.logo)
 
-        # 1.5 سیکنڈ بعد پرمیشن مانگیں
-        Clock.schedule_once(self.check_permissions, 1.5)
+        # 1 سیکنڈ بعد پرمیشن مانگیں
+        Clock.schedule_once(self.check_permissions, 1.0)
+        
+        # بائی پاس: اگر 4 سیکنڈ تک ایپ آگے نہ جائے تو زبردستی چلائیں (Infinity لوگو کو روکنے کے لیے)
+        Clock.schedule_once(self.force_start, 4.0)
 
     def show_toast(self, text):
         if platform == 'android':
@@ -54,23 +58,24 @@ class AlienAppBase(FloatLayout):
             self.start_everything()
 
     def on_permissions_result(self, permissions, grants):
-        if all(grants):
-            self.show_toast("Permissions Granted. Starting Ayesha...")
-            Clock.schedule_once(self.start_everything, 1)
-        else:
-            self.show_toast("Permissions Required to run!")
+        self.start_everything()
+
+    def force_start(self, dt):
+        # اگر ایپ ابھی تک لوگو پر اٹکی ہے تو زبردستی آگے جائیں
+        if not self.is_started:
+            self.start_everything()
 
     def start_everything(self, dt=None):
-        # پرمیشن ملنے کے بعد لوگو غائب کریں
+        if self.is_started: return
+        self.is_started = True
+        
+        # لوگو غائب کریں
         if self.logo in self.children:
             self.remove_widget(self.logo)
 
         self.init_tts()
-        # پہلے ویب ویو لوڈ کریں
         self.load_webview()
-        
-        # اور 2 سیکنڈ بعد آرام سے ببل لائیں تاکہ کریش نہ ہو
-        Clock.schedule_once(self.load_bubble, 2.5)
+        Clock.schedule_once(self.load_bubble, 2.0)
 
     def load_bubble(self, dt):
         if os.path.exists('preview.mp4'):
@@ -98,6 +103,7 @@ class AlienAppBase(FloatLayout):
             self.wv.setWebChromeClient(WebChromeClient())
             
             email = "alirazasabir007@gmail.com"
+            # یہ لنک ہگنگ فیس کا ہی ہے جو عائشہ کو زندہ کرتا ہے
             self.wv.loadUrl(f"https://aigrowthbox-ayesha-ai.hf.space?email={email}")
             
             activity.addContentView(self.wv, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
