@@ -11,15 +11,15 @@ package.domain = com.raza.alien
 # (str) Source code where the main.py live
 source.dir = .
 
-# (list) Source files to include
+# (list) Source files to include (mp4 لازمی ایڈ ہے)
 source.include_exts = py,png,jpg,kv,atlas,mp4
 
 # (str) Application versioning
 version = 1.0
 
 # 🚀 (list) Application requirements
-# یہاں plyer اور hostpython کے ورژن فکس کر دیے ہیں تاکہ کریش نہ ہو
-requirements = python3, kivy==2.3.0, pyjnius, android, plyer, hostpython3==3.11.0
+# (ffpyplayer اور urllib3 کا اضافہ کیا گیا ہے تاکہ ویڈیو چلے اور برج کریش نہ ہو)
+requirements = python3, kivy==2.3.0, pyjnius, android, plyer, hostpython3==3.11.0, urllib3, ffpyplayer
 
 # (str) Presplash and Icon
 presplash.filename = %(source.dir)s/icon.png
@@ -31,11 +31,10 @@ orientation = portrait
 # (bool) Fullscreen or not
 fullscreen = 0
 
-# 🔒 (list) Permissions
-android.permissions = INTERNET, RECORD_AUDIO, MODIFY_AUDIO_SETTINGS, ACCESS_NETWORK_STATE, SYSTEM_ALERT_WINDOW, GET_ACCOUNTS, CAMERA, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE
+# 🔒 (list) Permissions (SYSTEM_ALERT_WINDOW اور WAKE_LOCK شامل ہیں)
+android.permissions = INTERNET, RECORD_AUDIO, MODIFY_AUDIO_SETTINGS, ACCESS_NETWORK_STATE, SYSTEM_ALERT_WINDOW, GET_ACCOUNTS, CAMERA, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, WAKE_LOCK
 
-# 📱 (int) Target Android API
-# 33 سب سے زیادہ سٹیبل ہے کریشز روکنے کے لیے
+# 📱 (int) Target Android API (33 سب سے زیادہ سٹیبل ہے)
 android.api = 33
 android.minapi = 24
 android.sdk = 33
