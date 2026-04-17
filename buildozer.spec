@@ -16,6 +16,8 @@ orientation = portrait
 fullscreen = 0
 
 android.permissions = INTERNET, RECORD_AUDIO, MODIFY_AUDIO_SETTINGS, ACCESS_NETWORK_STATE, CAMERA, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE
+android.meta_data = com.google.android.gms.version=@integer/google_play_services_version
+android.entrypoint_theme = @style/Theme.AppCompat.NoActionBar
 
 android.api = 33
 android.minapi = 24
