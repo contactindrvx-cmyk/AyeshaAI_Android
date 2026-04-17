@@ -2,11 +2,10 @@ import os, json, base64
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.video import Video
-from kivy.uix.label import Label
+from kivy.uix.image import Image
 from kivy.clock import Clock
 from kivy.utils import platform
 
-# اینڈرائیڈ کی مخصوص لائبریریز
 if platform == 'android':
     try:
         from jnius import autoclass, PythonJavaClass, java_method
@@ -31,11 +30,12 @@ class AlienAppBase(FloatLayout):
         self.wv = None
         self.bubble = None
         
-        # ایک سادہ ٹیکسٹ دکھائیں تاکہ پتا چلے ایپ زندہ ہے
-        self.add_widget(Label(text="Alien AI Loading...", pos_hint={'center_x': 0.5, 'center_y': 0.5}))
+        # 1. لوگو دکھائیں (Alien AI Loading کی جگہ)
+        self.logo = Image(source='icon.png', pos_hint={'center_x': 0.5, 'center_y': 0.5}, size_hint=(0.5, 0.5))
+        self.add_widget(self.logo)
 
-        # 2 سیکنڈ کا انتظار تاکہ سسٹم سیٹ ہو جائے
-        Clock.schedule_once(self.check_permissions, 2)
+        # 1.5 سیکنڈ بعد پرمیشن مانگیں
+        Clock.schedule_once(self.check_permissions, 1.5)
 
     def show_toast(self, text):
         if platform == 'android':
@@ -55,16 +55,24 @@ class AlienAppBase(FloatLayout):
 
     def on_permissions_result(self, permissions, grants):
         if all(grants):
-            self.show_toast("پرمیشنز مل گئیں۔ اب لوڈ کر رہے ہیں...")
+            self.show_toast("Permissions Granted. Starting Ayesha...")
             Clock.schedule_once(self.start_everything, 1)
         else:
-            self.show_toast("ایپ کو تمام پرمیشنز کی ضرورت ہے!")
+            self.show_toast("Permissions Required to run!")
 
     def start_everything(self, dt=None):
-        # 1. پہلے ٹیکسٹ ٹو سپیچ (TTS) لوڈ کریں
+        # پرمیشن ملنے کے بعد لوگو غائب کریں
+        if self.logo in self.children:
+            self.remove_widget(self.logo)
+
         self.init_tts()
+        # پہلے ویب ویو لوڈ کریں
+        self.load_webview()
         
-        # 2. پھر ویڈیو ببل لوڈ کریں (صرف اگر فائل موجود ہو)
+        # اور 2 سیکنڈ بعد آرام سے ببل لائیں تاکہ کریش نہ ہو
+        Clock.schedule_once(self.load_bubble, 2.5)
+
+    def load_bubble(self, dt):
         if os.path.exists('preview.mp4'):
             try:
                 self.bubble = Video(source='preview.mp4', state='pause', options={'eos': 'loop'})
@@ -73,17 +81,12 @@ class AlienAppBase(FloatLayout):
                 self.bubble.pos_hint = {'right': 0.95, 'top': 0.95}
                 self.add_widget(self.bubble)
             except Exception as e:
-                print(f"Video Error: {e}")
-        
-        # 3. آخر میں ویب ویو لوڈ کریں
-        Clock.schedule_once(self.load_webview, 1)
+                print(f"Video Bubble Error: {e}")
 
     def init_tts(self):
-        # (پرانا TTS لاجک یہاں محفوظ ہے)
         if platform == 'android':
             try:
                 self.tts = TextToSpeech(activity, None) 
-                # نوٹ: لسنر کو سادہ رکھا ہے تاکہ کریش نہ ہو
             except: pass
 
     @run_on_ui_thread
@@ -97,14 +100,8 @@ class AlienAppBase(FloatLayout):
             email = "alirazasabir007@gmail.com"
             self.wv.loadUrl(f"https://aigrowthbox-ayesha-ai.hf.space?email={email}")
             
-            # ویب ویو کو سکرین پر ایڈ کریں
             activity.addContentView(self.wv, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
             
-            # ویب ویو کے آنے کے بعد ببل کو دوبارہ اوپر لانے کی کوشش
-            if self.bubble:
-                self.bubble.parent.remove_widget(self.bubble)
-                self.add_widget(self.bubble)
-                
             Clock.schedule_interval(self.check_commands, 1)
         except Exception as e:
             self.show_toast(f"WebView Error: {e}")
