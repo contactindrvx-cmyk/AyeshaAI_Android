@@ -1,10 +1,12 @@
 import os, json, base64
 from kivy.app import App
-from kivy.uix.widget import Widget
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.video import Video
+from kivy.uix.behaviors import ButtonBehavior
 from kivy.clock import Clock
 from kivy.utils import platform
 
-# اینڈرائیڈ مخصوص کلاسز لوڈ کرنا
+# اینڈرائیڈ کی لائبریریز
 if platform == 'android':
     from jnius import autoclass, PythonJavaClass, java_method
     from android.runnable import run_on_ui_thread
@@ -17,8 +19,9 @@ if platform == 'android':
     TextToSpeech = autoclass('android.speech.tts.TextToSpeech')
     Locale = autoclass('java.util.Locale')
     Toast = autoclass('android.widget.Toast')
+    # WebView کو Kivy کے اوپر دکھانے کے لیے LayoutParams درکار ہیں
+    LayoutParams = autoclass('android.view.ViewGroup$LayoutParams')
 
-    # 🔊 آواز کے لیے لسنر
     class TTSInitListener(PythonJavaClass):
         __javainterfaces__ = ['android/speech/tts/TextToSpeech$OnInitListener']
         def __init__(self, callback):
@@ -29,7 +32,6 @@ if platform == 'android':
             if status == TextToSpeech.SUCCESS:
                 self.callback()
 
-    # 🔗 جاوا سکرپٹ سے ڈیٹا لینے والا ریسیور
     class JSReceiver(PythonJavaClass):
         __javainterfaces__ = ['android/webkit/ValueCallback']
         def __init__(self, callback):
@@ -42,14 +44,38 @@ if platform == 'android':
                 if val and val != "null":
                     self.callback(val)
 
-class AlienAppBase(Widget):
+# 🎥 آپ کا فلوٹنگ ویڈیو ببل کلاس
+class FloatingVideoBubble(ButtonBehavior, Video):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.source = 'preview.mp4'  # آپ کی ویڈیو فائل
+        self.state = 'pause'         # شروع میں رکا رہے گا
+        self.options = {'eos': 'loop'} # بار بار چلے گا جب تک پلے ہے
+        self.size_hint = (None, None)
+        self.size = (180, 180)       # ببل کا سائز
+        self.pos_hint = {'right': 0.95, 'top': 0.95} # سکرین پر جگہ
+
+    # ببل پر ٹچ کرنے پر
+    def on_release(self):
+        if self.state == 'play':
+            self.state = 'pause'
+        else:
+            self.state = 'play'
+
+# 🚀 مین لے آؤٹ اور ایپ فلو
+class AlienAppBase(FloatLayout): 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.tts = None
         self.tts_ready = False
         self.wv = None
-        # ایپ کھلنے کے 2 سیکنڈ بعد پرمیشنز مانگے گا تاکہ کریش نہ ہو
-        Clock.schedule_once(self.start_app_flow, 2)
+        
+        # ببل کو سکرین پر ایڈ کیا
+        self.bubble = FloatingVideoBubble()
+        self.add_widget(self.bubble)
+
+        # 1.5 سیکنڈ کے ڈیلے کے بعد پرمیشن مانگے گا تاکہ کریش نہ ہو
+        Clock.schedule_once(self.start_app_flow, 1.5)
 
     def show_toast(self, text):
         if platform == 'android':
@@ -57,52 +83,64 @@ class AlienAppBase(Widget):
 
     def start_app_flow(self, dt):
         if platform == 'android':
-            request_permissions([
+            # یہاں SYSTEM_ALERT_WINDOW نہیں ڈالا تاکہ ایپ کریش نہ ہو
+            permissions = [
                 Permission.RECORD_AUDIO, 
                 Permission.CAMERA, 
                 Permission.READ_EXTERNAL_STORAGE,
                 Permission.WRITE_EXTERNAL_STORAGE
-            ], self.permissions_granted)
+            ]
+            request_permissions(permissions, self.permissions_granted)
         else:
+            self.init_tts()
             self.load_webview()
 
     def permissions_granted(self, permissions, grants):
-        # پرمیشن ملنے کے بعد ہارڈویئر اور ویب سائٹ لوڈ کریں
-        self.init_tts()
-        self.load_webview()
+        # پرمیشن ملنے کے بعد آرام سے ہارڈویئر لوڈ کرے گا
+        if all(grants):
+            self.show_toast("عائشہ ایکٹیویٹ ہو رہی ہے...")
+            Clock.schedule_once(lambda dt: self.init_tts(), 0.5)
+            Clock.schedule_once(lambda dt: self.load_webview(), 1.0)
+            Clock.schedule_interval(self.trigger_js_check, 0.5)
+        else:
+            self.show_toast("مائیک اور کیمرے کی پرمیشن لازمی ہے!")
 
     def init_tts(self):
-        try:
-            self.tts = TextToSpeech(activity, TTSInitListener(self.on_tts_ready))
-        except:
-            print("TTS Initialization failed")
+        if platform == 'android':
+            try:
+                self.tts = TextToSpeech(activity, TTSInitListener(self.on_tts_ready))
+            except Exception as e:
+                print("TTS Error:", e)
 
     def on_tts_ready(self):
         self.tts_ready = True
         self.tts.setLanguage(Locale("ur", "PK"))
-        self.show_toast("عائشہ کا سپیکر تیار ہے!")
 
     @run_on_ui_thread
     def load_webview(self):
-        self.wv = WebView(activity)
-        settings = self.wv.getSettings()
-        settings.setJavaScriptEnabled(True)
-        settings.setDomStorageEnabled(True)
-        settings.setAllowFileAccess(True)
-        self.wv.setWebChromeClient(WebChromeClient())
-        
-        # آپ کی ماسٹر ای میل کے ساتھ ہگنگ فیس کا لنک
-        email = "alirazasabir007@gmail.com"
-        self.wv.loadUrl(f"https://aigrowthbox-ayesha-ai.hf.space?email={email}")
-        activity.setContentView(self.wv)
-        
-        # ہر آدھے سیکنڈ بعد چیک کرے گا کہ عائشہ نے کچھ بولا تو نہیں
-        Clock.schedule_interval(self.check_commands, 0.5)
+        try:
+            self.wv = WebView(activity)
+            settings = self.wv.getSettings()
+            settings.setJavaScriptEnabled(True)
+            settings.setDomStorageEnabled(True)
+            settings.setAllowFileAccess(True)
+            settings.setMediaPlaybackRequiresUserGesture(False) 
+            
+            self.wv.setWebChromeClient(WebChromeClient())
+            email = "alirazasabir007@gmail.com"
+            self.wv.loadUrl(f"https://aigrowthbox-ayesha-ai.hf.space?email={email}")
+            
+            # ہم addContentView استعمال کر رہے ہیں تاکہ ببل بھی نظر آئے اور ویب سائٹ بھی
+            activity.addContentView(self.wv, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+        except Exception as e:
+            print("WebView Error:", e)
 
-    @run_on_ui_thread
-    def check_commands(self, dt):
-        if self.wv:
-            self.wv.evaluateJavascript("getPendingAlienCommands()", JSReceiver(self.handle_js_data))
+    def trigger_js_check(self, dt):
+        if self.wv and platform == 'android':
+            run_on_ui_thread(self.execute_js_check)()
+
+    def execute_js_check(self):
+        self.wv.evaluateJavascript("getPendingAlienCommands()", JSReceiver(self.handle_js_data))
 
     def handle_js_data(self, data):
         if not data or data == "null": return
@@ -116,14 +154,23 @@ class AlienAppBase(Widget):
 
     def speak_text(self, text):
         if self.tts and self.tts_ready:
+            # عائشہ بولے گی تو ببل اینیمیٹ ہوگا
+            self.bubble.state = 'play'
             self.tts.speak(text, TextToSpeech.QUEUE_FLUSH, None, "1")
+            
+            # بولنے کی لمبائی کے حساب سے ٹائمر جو ببل کو روکے گا
+            duration = len(text) * 0.12 
+            Clock.schedule_once(self.stop_bubble_animation, duration)
+
+    def stop_bubble_animation(self, dt):
+        self.bubble.state = 'pause'
 
     def open_gallery(self):
         try:
             from plyer import filechooser
             filechooser.open_file(on_selection=self.on_file_selected)
-        except:
-            self.show_toast("گیلری کھولنے میں مسئلہ ہے")
+        except Exception:
+            self.show_toast("گیلری کا ایرر")
 
     def on_file_selected(self, selection):
         if selection:
@@ -132,8 +179,8 @@ class AlienAppBase(Widget):
                     img_data = base64.b64encode(f.read()).decode('utf-8')
                 js = f"window.receiveImageFromAndroid('data:image/jpeg;base64,{img_data}')"
                 run_on_ui_thread(lambda: self.wv.evaluateJavascript(js, None))()
-            except:
-                self.show_toast("تصویر لوڈ نہیں ہو سکی")
+            except Exception:
+                self.show_toast("تصویر کا ایرر")
 
 class AlienAIChat(App):
     def build(self):
@@ -141,4 +188,4 @@ class AlienAIChat(App):
 
 if __name__ == '__main__':
     AlienAIChat().run()
-    
+        
