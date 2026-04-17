@@ -14,22 +14,31 @@ if platform == 'android':
     WebChromeClient = autoclass('android.webkit.WebChromeClient')
     Activity = autoclass('org.kivy.android.PythonActivity').mActivity
 
-class AyeshaAIApp(App):
+# ہیڈر ہٹانے کے لیے کسٹم کلائنٹ
+class MyWebViewClient(WebViewClient):
+    def onPageFinished(self, view, url):
+        # یہ لائن ہیڈر اور فالتو ایلیمنٹس کو غائب کر دے گی
+        view.loadUrl("javascript:(function() { " +
+                     "document.querySelector('header').style.display='none'; " +
+                     "document.querySelector('footer').style.display='none'; " +
+                     "document.querySelector('.header').style.display='none'; " +
+                     "})()")
+
+class AlienAIApp(App):
     def build(self):
         self.layout = FloatLayout()
         
-        # 🟢 فلوٹنگ ببل (عائشہ کی ویڈیو)
+        # 🟢 فلوٹنگ ببل
         self.bubble_video = Video(
-            source='ayesha.mp4',  # یہاں آپ کی ویڈیو کا نام ہونا چاہیے
+            source='ayesha.mp4',
             state='play',
-            options={'eos': 'loop'}, # ویڈیو بار بار چلے گی
+            options={'eos': 'loop'}, 
             size_hint=(None, None),
-            size=(250, 250), # ببل کا سائز
-            pos_hint={'right': 0.95, 'top': 0.95} # سکرین کے اوپر دائیں کونے میں
+            size=(250, 250), 
+            pos_hint={'right': 0.98, 'top': 0.95} 
         )
         self.layout.add_widget(self.bubble_video)
 
-        # اینڈرائیڈ کے لیے پرمیشنز اور ویب ویو
         if platform == 'android':
             request_permissions([
                 Permission.INTERNET,
@@ -48,16 +57,18 @@ class AyeshaAIApp(App):
             webview = WebView(Activity)
             webview.getSettings().setJavaScriptEnabled(True)
             webview.getSettings().setDomStorageEnabled(True)
-            webview.getSettings().setMediaPlaybackRequiresUserGesture(False) # آٹو پلے کے لیے
-            webview.setWebViewClient(WebViewClient())
+            webview.getSettings().setMediaPlaybackRequiresUserGesture(False)
+            
+            # ہیڈر چھپانے والا کلائنٹ سیٹ کریں
+            webview.setWebViewClient(MyWebViewClient())
             webview.setWebChromeClient(WebChromeClient())
             
-            # 👇 یہاں اپنا اصل ہگنگ فیس کا لنک ڈالیں
-            webview.loadUrl('YOUR_HUGGING_FACE_LINK_HERE')
+            # ایمبیڈ موڈ کے ساتھ لنک لوڈ کریں
+            clean_url = 'https://huggingface.co/spaces/aigrowthbox/ayesha-ai?embed=true'
+            webview.loadUrl(clean_url)
             
-            # ویب ویو کو سیٹ کرنا
             Activity.setContentView(webview)
 
 if __name__ == '__main__':
-    AyeshaAIApp().run()
+    AlienAIApp().run()
     
