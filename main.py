@@ -1,9 +1,10 @@
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.utils import platform
+from kivy.clock import Clock
 
 if platform == 'android':
-    from jnius import autoclass
+    from jnius import autoclass, cast
     from android.permissions import request_permissions, Permission
     from android.runnable import run_on_ui_thread
     
@@ -11,6 +12,11 @@ if platform == 'android':
     WebViewClient = autoclass('android.webkit.WebViewClient')
     WebChromeClient = autoclass('android.webkit.WebChromeClient')
     Activity = autoclass('org.kivy.android.PythonActivity').mActivity
+
+    # 🔴 یہ کلاس مائیک اور کیمرہ کی اجازت ویب سائٹ کو دے گی
+    class MyWebChromeClient(WebChromeClient):
+        def onPermissionRequest(self, request):
+            request.grant(request.getResources())
 
 class AlienAIApp(App):
     def build(self):
@@ -20,6 +26,7 @@ class AlienAIApp(App):
                 Permission.INTERNET,
                 Permission.RECORD_AUDIO,
                 Permission.CAMERA,
+                Permission.MODIFY_AUDIO_SETTINGS,
                 Permission.READ_EXTERNAL_STORAGE,
                 Permission.WRITE_EXTERNAL_STORAGE
             ])
@@ -29,26 +36,31 @@ class AlienAIApp(App):
     if platform == 'android':
         @run_on_ui_thread
         def create_webview(self):
-            webview = WebView(Activity)
-            settings = webview.getSettings()
+            self.webview = WebView(Activity)
+            settings = self.webview.getSettings()
             
-            # بیسک سیٹنگز
+            # 🟢 آواز اور ہارڈویئر سیٹنگز
             settings.setJavaScriptEnabled(True)
-            settings.setDomStorageEnabled(True)
-            settings.setMediaPlaybackRequiresUserGesture(False)
+            settings.setDomStorageEnabled(True) # آواز کے لیے ضروری
+            settings.setDatabaseEnabled(True)
+            settings.setMediaPlaybackRequiresUserGesture(False) # آواز آٹو پلے کے لیے
             
-            # 🟢 بٹن اور سکرین فٹ کرنے کی سیٹنگز (Viewport Fix)
-            settings.setLoadWithOverviewMode(True)
-            settings.setUseWideViewPort(True)
+            # 🔵 فائل اپلوڈ (تصویر بھیجنے) کے لیے سیٹنگز
+            settings.setAllowFileAccess(True)
+            settings.setAllowContentAccess(True)
+            settings.setAllowFileAccessFromFileURLs(True)
+            settings.setAllowUniversalAccessFromFileURLs(True)
             
-            webview.setWebViewClient(WebViewClient())
-            webview.setWebChromeClient(WebChromeClient())
+            # ویب ویو کلائنٹس
+            self.webview.setWebViewClient(WebViewClient())
+            # 🔴 مائیک اور کیمرہ کے لیے نیا کلائنٹ
+            self.webview.setWebChromeClient(MyWebChromeClient())
             
-            # 🟢 ڈائریکٹ ایپ کا لنک (یہ فالتو ہیڈر خود بخود اڑا دے گا)
+            # آپ کا لنک
             clean_url = 'https://aigrowthbox-ayesha-ai.hf.space'
-            webview.loadUrl(clean_url)
+            self.webview.loadUrl(clean_url)
             
-            Activity.setContentView(webview)
+            Activity.setContentView(self.webview)
 
 if __name__ == '__main__':
     AlienAIApp().run()
