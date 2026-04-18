@@ -1,7 +1,5 @@
 from kivy.app import App
-from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.video import Video
-from kivy.core.window import Window
+from kivy.uix.widget import Widget
 from kivy.utils import platform
 
 if platform == 'android':
@@ -14,32 +12,13 @@ if platform == 'android':
     WebChromeClient = autoclass('android.webkit.WebChromeClient')
     Activity = autoclass('org.kivy.android.PythonActivity').mActivity
 
-# ہیڈر ہٹانے کے لیے کسٹم کلائنٹ
-class MyWebViewClient(WebViewClient):
-    def onPageFinished(self, view, url):
-        # یہ لائن ہیڈر اور فالتو ایلیمنٹس کو غائب کر دے گی
-        view.loadUrl("javascript:(function() { " +
-                     "document.querySelector('header').style.display='none'; " +
-                     "document.querySelector('footer').style.display='none'; " +
-                     "document.querySelector('.header').style.display='none'; " +
-                     "})()")
-
 class AlienAIApp(App):
     def build(self):
-        self.layout = FloatLayout()
+        # صرف ایک خالی بیس لے آؤٹ، تاکہ کریش نہ ہو
+        self.root = Widget() 
         
-        # 🟢 فلوٹنگ ببل
-        self.bubble_video = Video(
-            source='ayesha.mp4',
-            state='play',
-            options={'eos': 'loop'}, 
-            size_hint=(None, None),
-            size=(250, 250), 
-            pos_hint={'right': 0.98, 'top': 0.95} 
-        )
-        self.layout.add_widget(self.bubble_video)
-
         if platform == 'android':
+            # کیمرہ، مائیک اور انٹرنیٹ کی پرمیشنز
             request_permissions([
                 Permission.INTERNET,
                 Permission.RECORD_AUDIO,
@@ -49,7 +28,7 @@ class AlienAIApp(App):
             ])
             self.create_webview()
             
-        return self.layout
+        return self.root
 
     if platform == 'android':
         @run_on_ui_thread
@@ -59,14 +38,15 @@ class AlienAIApp(App):
             webview.getSettings().setDomStorageEnabled(True)
             webview.getSettings().setMediaPlaybackRequiresUserGesture(False)
             
-            # ہیڈر چھپانے والا کلائنٹ سیٹ کریں
-            webview.setWebViewClient(MyWebViewClient())
+            # ڈیفالٹ کلائنٹ تاکہ کوئی ایرر نہ آئے اور ایپ براؤزر میں نہ کھلے
+            webview.setWebViewClient(WebViewClient())
             webview.setWebChromeClient(WebChromeClient())
             
-            # ایمبیڈ موڈ کے ساتھ لنک لوڈ کریں
+            # آپ کا لنک embed=true کے ساتھ (یہ خود ہیڈر ہٹا دے گا)
             clean_url = 'https://huggingface.co/spaces/aigrowthbox/ayesha-ai?embed=true'
             webview.loadUrl(clean_url)
             
+            # ویب ویو کو پوری سکرین پر سیٹ کرنا
             Activity.setContentView(webview)
 
 if __name__ == '__main__':
