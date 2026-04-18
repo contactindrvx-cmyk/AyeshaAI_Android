@@ -9,21 +9,16 @@ if platform == 'android':
     
     WebView = autoclass('android.webkit.WebView')
     WebViewClient = autoclass('android.webkit.WebViewClient')
-    WebChromeClient = autoclass('android.webkit.WebChromeClient')
     Activity = autoclass('org.kivy.android.PythonActivity').mActivity
 
 class AlienAIApp(App):
     def build(self):
         self.root = Widget()
         if platform == 'android':
-            # موبائل سے بنیادی پرمیشنز مانگنا
             request_permissions([
-                Permission.INTERNET, 
-                Permission.RECORD_AUDIO,
-                Permission.CAMERA, 
-                Permission.READ_EXTERNAL_STORAGE,
-                Permission.WRITE_EXTERNAL_STORAGE,
-                Permission.MODIFY_AUDIO_SETTINGS
+                Permission.INTERNET, Permission.RECORD_AUDIO,
+                Permission.CAMERA, Permission.READ_EXTERNAL_STORAGE,
+                Permission.WRITE_EXTERNAL_STORAGE, Permission.MODIFY_AUDIO_SETTINGS
             ])
             self.create_webview()
         return self.root
@@ -34,21 +29,21 @@ class AlienAIApp(App):
             self.webview = WebView(Activity)
             s = self.webview.getSettings()
             
-            # 🟢 آواز اور فائل ایکسیس کی بالکل محفوظ سیٹنگز
+            # آواز اور فائلز کی سیٹنگز
             s.setJavaScriptEnabled(True)
-            s.setDomStorageEnabled(True) # عائشہ کی آواز کے لیے ضروری
+            s.setDomStorageEnabled(True) 
             s.setDatabaseEnabled(True)
-            s.setMediaPlaybackRequiresUserGesture(False) # آواز آٹو پلے
-            s.setAllowFileAccess(True) # پلس بٹن سے فائل اپلوڈ کے لیے
+            s.setMediaPlaybackRequiresUserGesture(False) 
+            s.setAllowFileAccess(True)
             s.setAllowContentAccess(True)
             
-            # 🔴 یہاں اوریجنل کلائنٹ استعمال کیا ہے تاکہ کریش نہ ہو
+            # 🔴 آپ کی بنائی ہوئی اصلی جاوا کلاس بلائی جا رہی ہے
+            MyWebClient = autoclass('com.raza.alien.MyWebClient')
+            
             self.webview.setWebViewClient(WebViewClient())
-            self.webview.setWebChromeClient(WebChromeClient())
+            self.webview.setWebChromeClient(MyWebClient())
             
-            # آپ کا لنک
             self.webview.loadUrl('https://aigrowthbox-ayesha-ai.hf.space')
-            
             Activity.setContentView(self.webview)
 
 if __name__ == '__main__':
