@@ -5,21 +5,14 @@ package.domain = com.raza.alien
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json
 version = 1.0
-
 requirements = python3, kivy==2.3.0, pyjnius, android, plyer, hostpython3==3.11.0, urllib3
-
 icon.filename = %(source.dir)s/icon.png
 presplash.filename = %(source.dir)s/icon.png
 android.presplash_color = #FFFFFF
-
 orientation = portrait
 fullscreen = 0
-
 android.add_src = java_src
-
-# 🔴 اینڈرائیڈ 13 کی تمام میڈیا پرمیشنز
-android.permissions = INTERNET, RECORD_AUDIO, MODIFY_AUDIO_SETTINGS, CAMERA, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, WAKE_LOCK, READ_MEDIA_IMAGES, READ_MEDIA_AUDIO, READ_MEDIA_VIDEO
-
+android.permissions = INTERNET, RECORD_AUDIO, MODIFY_AUDIO_SETTINGS, CAMERA, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, WAKE_LOCK, READ_MEDIA_IMAGES
 android.api = 33
 android.minapi = 24
 android.sdk = 33
