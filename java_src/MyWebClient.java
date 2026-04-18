@@ -24,6 +24,7 @@ public class MyWebClient extends WebChromeClient {
 
     @Override
     public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+        // اگر پہلے سے کوئی ریکویسٹ پھنسی ہوئی ہے، تو اسے کینسل کر کے لاک کھولیں
         if (mUploadMessage != null) {
             mUploadMessage.onReceiveValue(null);
         }
@@ -31,15 +32,35 @@ public class MyWebClient extends WebChromeClient {
 
         Intent i = new Intent(Intent.ACTION_GET_CONTENT);
         i.addCategory(Intent.CATEGORY_OPENABLE);
-        i.setType("image/*"); // صرف تصویروں کے لیے تاکہ سسٹم کنفیوز نہ ہو
+        i.setType("image/*");
 
         try {
-            // گیلری کھولنا
             PythonActivity.mActivity.startActivityForResult(Intent.createChooser(i, "Select Picture"), 100);
         } catch (Exception e) {
             mUploadMessage = null;
             return false;
         }
         return true;
+    }
+
+    // 🟢 THE MASTER FIX: تصویر کو جاوا کے اندر ہی پروسیس کرنا تاکہ جام نہ ہو
+    public static void handleUpload(int resultCode, Intent intent) {
+        if (mUploadMessage == null) return;
+        Uri[] results = null;
+        try {
+            if (resultCode == Activity.RESULT_OK && intent != null) {
+                String dataString = intent.getDataString();
+                if (dataString != null) {
+                    results = new Uri[]{Uri.parse(dataString)};
+                } else {
+                    results = WebChromeClient.FileChooserParams.parseResult(resultCode, intent);
+                }
+            }
+        } catch (Exception e) {
+            results = null;
+        }
+        // یہ لائن ویب سائٹ کو تصویر دیتی ہے اور پلس بٹن کا لاک کھولتی ہے
+        mUploadMessage.onReceiveValue(results);
+        mUploadMessage = null;
     }
 }
