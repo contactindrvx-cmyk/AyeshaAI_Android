@@ -13,7 +13,6 @@ public class MyWebClient extends WebChromeClient {
 
     @Override
     public void onPermissionRequest(final PermissionRequest request) {
-        // 🔴 آواز اور مائیک کو "مین تھریڈ" پر پرمیشن دینا تاکہ اینڈرائیڈ میوٹ نہ کرے
         PythonActivity.mActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -22,20 +21,22 @@ public class MyWebClient extends WebChromeClient {
         });
     }
 
+    // 🟢 یہ وہ فنکشن ہے جو پلس بٹن دبانے پر ہر حال میں گیلری کھولے گا
     @Override
     public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
         if (mUploadMessage != null) {
             mUploadMessage.onReceiveValue(null);
         }
         mUploadMessage = filePathCallback;
-        
-        // 🔴 گیلری کھولنے کا فورس (Force) کمانڈ جو ہر حال میں کام کرے گا
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("*/*"); // سب طرح کی تصویریں اور فائلیں سپورٹ کرے گا
-        
+
+        // گیلری اور فائلز کھولنے کا اصلی اینڈرائیڈ انٹینٹ
+        Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+        i.addCategory(Intent.CATEGORY_OPENABLE);
+        i.setType("*/*"); // تصویر، آڈیو، سب کچھ سلیکٹ کرنے کے لیے
+
+        Intent chooserIntent = Intent.createChooser(i, "Select File");
         try {
-            PythonActivity.mActivity.startActivityForResult(intent, 100);
+            PythonActivity.mActivity.startActivityForResult(chooserIntent, 100);
         } catch (Exception e) {
             mUploadMessage = null;
             return false;
