@@ -1,18 +1,34 @@
 from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.utils import platform
+from kivy.core.window import Window
 
 if platform == 'android':
     from jnius import autoclass
     from android.permissions import request_permissions, Permission
     from android.runnable import run_on_ui_thread
+    import android.activity
     
     WebView = autoclass('android.webkit.WebView')
     WebViewClient = autoclass('android.webkit.WebViewClient')
     Activity = autoclass('org.kivy.android.PythonActivity').mActivity
+    MyWebClient = autoclass('com.raza.alien.MyWebClient')
+    FileChooserParams = autoclass('android.webkit.WebChromeClient$FileChooserParams')
+    
+    # 🟢 یہ فنکشن گیلری سے منتخب کی گئی تصویر ویب سائٹ کو دے گا
+    def on_activity_result(request_code, result_code, intent):
+        if request_code == 100:
+            if MyWebClient.mUploadMessage is not None:
+                results = FileChooserParams.parseResult(result_code, intent)
+                MyWebClient.mUploadMessage.onReceiveValue(results)
+                MyWebClient.mUploadMessage = None
+                
+    android.activity.bind(on_activity_result=on_activity_result)
 
 class AlienAIApp(App):
     def build(self):
+        # 🔴 یہ لائن سکرین کو سونے نہیں دے گی، جس سے مائیک نہیں کٹے گا
+        Window.keep_on = True 
         self.root = Widget()
         if platform == 'android':
             request_permissions([
@@ -29,16 +45,15 @@ class AlienAIApp(App):
             self.webview = WebView(Activity)
             s = self.webview.getSettings()
             
-            # آواز اور فائلز کی سیٹنگز
+            # 🟢 آواز اور ہارڈویئر کی فائنل سیٹنگز
             s.setJavaScriptEnabled(True)
             s.setDomStorageEnabled(True) 
             s.setDatabaseEnabled(True)
-            s.setMediaPlaybackRequiresUserGesture(False) 
+            s.setMediaPlaybackRequiresUserGesture(False)
             s.setAllowFileAccess(True)
             s.setAllowContentAccess(True)
-            
-            # 🔴 آپ کی بنائی ہوئی اصلی جاوا کلاس بلائی جا رہی ہے
-            MyWebClient = autoclass('com.raza.alien.MyWebClient')
+            s.setMixedContentMode(0) # 🔴 آواز کا حل (Mixed Content Allow)
+            Activity.setVolumeControlStream(3) # 🔴 میڈیا سپیکر کا حل (Stream Music)
             
             self.webview.setWebViewClient(WebViewClient())
             self.webview.setWebChromeClient(MyWebClient())
