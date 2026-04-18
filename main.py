@@ -15,14 +15,17 @@ if platform == 'android':
     MyWebClient = autoclass('com.raza.alien.MyWebClient')
     FileChooserParams = autoclass('android.webkit.WebChromeClient$FileChooserParams')
     
-    # گیلری سے منتخب کی گئی تصویر کو ویب سائٹ کو دینا
+    # 🟢 تصویر سلیکٹ ہونے کے بعد اسے ویب سائٹ کے حوالے کرنے کا پکا طریقہ
     def on_activity_result(request_code, result_code, intent):
         if request_code == 100:
             if MyWebClient.mUploadMessage is not None:
-                try:
-                    results = FileChooserParams.parseResult(result_code, cast('android.content.Intent', intent))
+                # اگر تصویر سلیکٹ ہوئی ہے (result_code == -1 یعنی OK)
+                if result_code == -1 and intent is not None:
+                    data = cast('android.content.Intent', intent)
+                    results = FileChooserParams.parseResult(result_code, data)
                     MyWebClient.mUploadMessage.onReceiveValue(results)
-                except Exception:
+                else:
+                    # اگر کینسل کر دیا تو 'None' بھیجنا ضروری ہے ورنہ بٹن جام ہو جائے گا
                     MyWebClient.mUploadMessage.onReceiveValue(None)
                 MyWebClient.mUploadMessage = None
                 
@@ -37,9 +40,7 @@ class AlienAIApp(App):
                 Permission.INTERNET, Permission.RECORD_AUDIO,
                 Permission.CAMERA, Permission.READ_EXTERNAL_STORAGE,
                 Permission.WRITE_EXTERNAL_STORAGE, Permission.MODIFY_AUDIO_SETTINGS,
-                "android.permission.READ_MEDIA_IMAGES",
-                "android.permission.READ_MEDIA_AUDIO",
-                "android.permission.READ_MEDIA_VIDEO"
+                "android.permission.READ_MEDIA_IMAGES"
             ])
             self.create_webview()
         return self.root
@@ -47,33 +48,32 @@ class AlienAIApp(App):
     if platform == 'android':
         @run_on_ui_thread
         def create_webview(self):
-            # آواز اور تصویر کے انجن کو ان لاک کرنا
-            WebView.setWebContentsDebuggingEnabled(True)
-            
             self.webview = WebView(Activity)
             s = self.webview.getSettings()
             
-            # 🔵 آواز کے لیے موبائل کروم کا روپ دھارنا (UserAgent Trick)
-            user_agent = "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36"
-            s.setUserAgentString(user_agent)
-            
+            # 🔵 آواز اور تصویر کے لیے ماسٹر سیٹنگز
             s.setJavaScriptEnabled(True)
             s.setDomStorageEnabled(True) 
             s.setDatabaseEnabled(True)
             s.setMediaPlaybackRequiresUserGesture(False) 
             s.setAllowFileAccess(True)
             s.setAllowContentAccess(True)
+            s.setJavaScriptCanOpenWindowsAutomatically(True) # آواز کے پلیئر کے لیے
             s.setMixedContentMode(0) 
             
-            # آواز کو میڈیا سپیکر پر بھیجنا
+            # موبائل کروم کی شناخت تاکہ ویب سائٹ آواز بند نہ کرے
+            user_agent = "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36"
+            s.setUserAgentString(user_agent)
+            
             Activity.setVolumeControlStream(3) 
             
             self.webview.setWebViewClient(WebViewClient())
             self.webview.setWebChromeClient(MyWebClient())
             
+            # ڈائریکٹ لنک
             self.webview.loadUrl('https://aigrowthbox-ayesha-ai.hf.space')
             Activity.setContentView(self.webview)
 
 if __name__ == '__main__':
     AlienAIApp().run()
-            
+    
