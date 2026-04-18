@@ -15,6 +15,9 @@ android.presplash_color = #FFFFFF
 orientation = portrait
 fullscreen = 0
 
+# 🔴 یہ لائن جاوا فائل کو ایپ میں شامل کرے گی
+android.add_src = java_src
+
 android.permissions = INTERNET, RECORD_AUDIO, MODIFY_AUDIO_SETTINGS, CAMERA, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE
 
 android.api = 33
