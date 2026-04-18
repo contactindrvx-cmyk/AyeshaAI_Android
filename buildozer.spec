@@ -15,11 +15,10 @@ android.presplash_color = #FFFFFF
 orientation = portrait
 fullscreen = 0
 
-# 🔴 جاوا فائل کو جوڑنے والی لائن
 android.add_src = java_src
 
-# 🔴 مائیک اور بیک گراؤنڈ پرمیشنز
-android.permissions = INTERNET, RECORD_AUDIO, MODIFY_AUDIO_SETTINGS, CAMERA, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, WAKE_LOCK
+# 🔴 اینڈرائیڈ 13 (API 33) کے لیے نئی پرمیشنز شامل کر دی ہیں
+android.permissions = INTERNET, RECORD_AUDIO, MODIFY_AUDIO_SETTINGS, CAMERA, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, WAKE_LOCK, READ_MEDIA_IMAGES, READ_MEDIA_AUDIO, READ_MEDIA_VIDEO
 
 android.api = 33
 android.minapi = 24
