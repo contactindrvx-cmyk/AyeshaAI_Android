@@ -14,11 +14,8 @@ if platform == 'android':
 
 class AlienAIApp(App):
     def build(self):
-        # صرف ایک خالی بیس لے آؤٹ، تاکہ کریش نہ ہو
         self.root = Widget() 
-        
         if platform == 'android':
-            # کیمرہ، مائیک اور انٹرنیٹ کی پرمیشنز
             request_permissions([
                 Permission.INTERNET,
                 Permission.RECORD_AUDIO,
@@ -27,26 +24,30 @@ class AlienAIApp(App):
                 Permission.WRITE_EXTERNAL_STORAGE
             ])
             self.create_webview()
-            
         return self.root
 
     if platform == 'android':
         @run_on_ui_thread
         def create_webview(self):
             webview = WebView(Activity)
-            webview.getSettings().setJavaScriptEnabled(True)
-            webview.getSettings().setDomStorageEnabled(True)
-            webview.getSettings().setMediaPlaybackRequiresUserGesture(False)
+            settings = webview.getSettings()
             
-            # ڈیفالٹ کلائنٹ تاکہ کوئی ایرر نہ آئے اور ایپ براؤزر میں نہ کھلے
+            # بیسک سیٹنگز
+            settings.setJavaScriptEnabled(True)
+            settings.setDomStorageEnabled(True)
+            settings.setMediaPlaybackRequiresUserGesture(False)
+            
+            # 🟢 بٹن اور سکرین فٹ کرنے کی سیٹنگز (Viewport Fix)
+            settings.setLoadWithOverviewMode(True)
+            settings.setUseWideViewPort(True)
+            
             webview.setWebViewClient(WebViewClient())
             webview.setWebChromeClient(WebChromeClient())
             
-            # آپ کا لنک embed=true کے ساتھ (یہ خود ہیڈر ہٹا دے گا)
-            clean_url = 'https://huggingface.co/spaces/aigrowthbox/ayesha-ai?embed=true'
+            # 🟢 ڈائریکٹ ایپ کا لنک (یہ فالتو ہیڈر خود بخود اڑا دے گا)
+            clean_url = 'https://aigrowthbox-ayesha-ai.hf.space'
             webview.loadUrl(clean_url)
             
-            # ویب ویو کو پوری سکرین پر سیٹ کرنا
             Activity.setContentView(webview)
 
 if __name__ == '__main__':
