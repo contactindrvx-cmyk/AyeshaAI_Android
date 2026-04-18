@@ -4,10 +4,10 @@ from kivy.utils import platform
 from kivy.core.window import Window
 
 if platform == 'android':
-    from jnius import autoclass
+    from jnius import autoclass, cast
     from android.permissions import request_permissions, Permission
     from android.runnable import run_on_ui_thread
-    from android.activity import bind as activity_bind # 🔴 نیا بائنڈر جو گیلری کھولے گا
+    from android.activity import bind as activity_bind
     
     WebView = autoclass('android.webkit.WebView')
     WebViewClient = autoclass('android.webkit.WebViewClient')
@@ -15,15 +15,12 @@ if platform == 'android':
     MyWebClient = autoclass('com.raza.alien.MyWebClient')
     FileChooserParams = autoclass('android.webkit.WebChromeClient$FileChooserParams')
     
-    # 🔴 عائشہ کی آواز کے لیے تیسرے سرور کی پرمیشن
-    CookieManager = autoclass('android.webkit.CookieManager') 
-    
-    # 🟢 تصویر کو گیلری سے پکڑ کر ویب سائٹ کے پلس بٹن کو دینا
+    # گیلری سے منتخب کی گئی تصویر کو ویب سائٹ کو دینا
     def on_activity_result(request_code, result_code, intent):
         if request_code == 100:
             if MyWebClient.mUploadMessage is not None:
                 try:
-                    results = FileChooserParams.parseResult(result_code, intent)
+                    results = FileChooserParams.parseResult(result_code, cast('android.content.Intent', intent))
                     MyWebClient.mUploadMessage.onReceiveValue(results)
                 except Exception:
                     MyWebClient.mUploadMessage.onReceiveValue(None)
@@ -41,7 +38,8 @@ class AlienAIApp(App):
                 Permission.CAMERA, Permission.READ_EXTERNAL_STORAGE,
                 Permission.WRITE_EXTERNAL_STORAGE, Permission.MODIFY_AUDIO_SETTINGS,
                 "android.permission.READ_MEDIA_IMAGES",
-                "android.permission.READ_MEDIA_AUDIO"
+                "android.permission.READ_MEDIA_AUDIO",
+                "android.permission.READ_MEDIA_VIDEO"
             ])
             self.create_webview()
         return self.root
@@ -49,8 +47,15 @@ class AlienAIApp(App):
     if platform == 'android':
         @run_on_ui_thread
         def create_webview(self):
+            # آواز اور تصویر کے انجن کو ان لاک کرنا
+            WebView.setWebContentsDebuggingEnabled(True)
+            
             self.webview = WebView(Activity)
             s = self.webview.getSettings()
+            
+            # 🔵 آواز کے لیے موبائل کروم کا روپ دھارنا (UserAgent Trick)
+            user_agent = "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36"
+            s.setUserAgentString(user_agent)
             
             s.setJavaScriptEnabled(True)
             s.setDomStorageEnabled(True) 
@@ -58,16 +63,9 @@ class AlienAIApp(App):
             s.setMediaPlaybackRequiresUserGesture(False) 
             s.setAllowFileAccess(True)
             s.setAllowContentAccess(True)
-            s.setAllowFileAccessFromFileURLs(True)
-            s.setAllowUniversalAccessFromFileURLs(True)
             s.setMixedContentMode(0) 
             
-            # 🔴 آواز کا 100% پکا علاج (Cookies اور ہارڈویئر ایکسلریشن)
-            cookie_manager = CookieManager.getInstance()
-            cookie_manager.setAcceptCookie(True)
-            cookie_manager.setAcceptThirdPartyCookies(self.webview, True) # اس سے عائشہ کی آواز ان لاک ہوگی
-            self.webview.setLayerType(2, None) # آواز کو صاف چلانے کے لیے Hardware Acceleration
-            
+            # آواز کو میڈیا سپیکر پر بھیجنا
             Activity.setVolumeControlStream(3) 
             
             self.webview.setWebViewClient(WebViewClient())
@@ -78,4 +76,4 @@ class AlienAIApp(App):
 
 if __name__ == '__main__':
     AlienAIApp().run()
-    
+            
