@@ -17,7 +17,7 @@ fullscreen = 0
 
 android.add_src = java_src
 
-# 🔴 اینڈرائیڈ 13 (API 33) کے لیے نئی پرمیشنز شامل کر دی ہیں
+# 🔴 اینڈرائیڈ 13 کی تمام میڈیا پرمیشنز
 android.permissions = INTERNET, RECORD_AUDIO, MODIFY_AUDIO_SETTINGS, CAMERA, READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, WAKE_LOCK, READ_MEDIA_IMAGES, READ_MEDIA_AUDIO, READ_MEDIA_VIDEO
 
 android.api = 33
