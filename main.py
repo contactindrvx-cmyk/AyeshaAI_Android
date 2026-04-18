@@ -12,19 +12,18 @@ if platform == 'android':
     WebChromeClient = autoclass('android.webkit.WebChromeClient')
     Activity = autoclass('org.kivy.android.PythonActivity').mActivity
 
-    # 🔴 یہ کلاس مائیک اور کیمرہ کو ویب سائٹ کے لیے چالو کرے گی
-    class MyChromeClient(WebChromeClient):
-        def onPermissionRequest(self, request):
-            request.grant(request.getResources())
-
 class AlienAIApp(App):
     def build(self):
         self.root = Widget()
         if platform == 'android':
+            # موبائل سے بنیادی پرمیشنز مانگنا
             request_permissions([
-                Permission.INTERNET, Permission.RECORD_AUDIO,
-                Permission.CAMERA, Permission.READ_EXTERNAL_STORAGE,
-                Permission.WRITE_EXTERNAL_STORAGE
+                Permission.INTERNET, 
+                Permission.RECORD_AUDIO,
+                Permission.CAMERA, 
+                Permission.READ_EXTERNAL_STORAGE,
+                Permission.WRITE_EXTERNAL_STORAGE,
+                Permission.MODIFY_AUDIO_SETTINGS
             ])
             self.create_webview()
         return self.root
@@ -35,20 +34,21 @@ class AlienAIApp(App):
             self.webview = WebView(Activity)
             s = self.webview.getSettings()
             
-            # 🟢 آواز اور ہارڈویئر کا حل
+            # 🟢 آواز اور فائل ایکسیس کی بالکل محفوظ سیٹنگز
             s.setJavaScriptEnabled(True)
-            s.setDomStorageEnabled(True) # آواز کے لیے لازمی
+            s.setDomStorageEnabled(True) # عائشہ کی آواز کے لیے ضروری
             s.setDatabaseEnabled(True)
-            s.setMediaPlaybackRequiresUserGesture(False) # آٹو پلے آواز
-            s.setAllowFileAccess(True) # پلس بٹن کے لیے
+            s.setMediaPlaybackRequiresUserGesture(False) # آواز آٹو پلے
+            s.setAllowFileAccess(True) # پلس بٹن سے فائل اپلوڈ کے لیے
             s.setAllowContentAccess(True)
             
-            # سٹیبل کلائنٹس
+            # 🔴 یہاں اوریجنل کلائنٹ استعمال کیا ہے تاکہ کریش نہ ہو
             self.webview.setWebViewClient(WebViewClient())
-            # مائیک/کیمرہ کی اجازت والا کلائنٹ
-            self.webview.setWebChromeClient(MyChromeClient())
+            self.webview.setWebChromeClient(WebChromeClient())
             
+            # آپ کا لنک
             self.webview.loadUrl('https://aigrowthbox-ayesha-ai.hf.space')
+            
             Activity.setContentView(self.webview)
 
 if __name__ == '__main__':
