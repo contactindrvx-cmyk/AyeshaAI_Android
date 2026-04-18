@@ -3,15 +3,12 @@ title = Alien AI Chat and Assistant
 package.name = alienchat
 package.domain = com.raza.alien
 source.dir = .
-source.include_exts = py,png,jpg,kv,atlas,mp4,json
+source.include_exts = py,png,jpg,kv,atlas,json
 version = 1.0
 
 requirements = python3, kivy==2.3.0, pyjnius, android, plyer, hostpython3==3.11.0, urllib3
 
-# آپ کا پریمیم لوگو
 icon.filename = %(source.dir)s/icon.png
-
-# 🟢 Lottie ہٹا کر آپ کا پریمیم ہاتھ والا لوگو ہی لوڈنگ سکرین پر لگا دیا ہے
 presplash.filename = %(source.dir)s/icon.png
 android.presplash_color = #FFFFFF
 
