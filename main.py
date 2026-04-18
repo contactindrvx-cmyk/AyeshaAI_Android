@@ -15,7 +15,7 @@ if platform == 'android':
     MyWebClient = autoclass('com.raza.alien.MyWebClient')
     FileChooserParams = autoclass('android.webkit.WebChromeClient$FileChooserParams')
     
-    # 🟢 گیلری سے آئی ہوئی تصویر کو ویب سائٹ کے سپرد کرنا
+    # تصویر کو گیلری سے پکڑ کر ویب سائٹ کے پلس بٹن کو دینا
     def on_activity_result(request_code, result_code, intent):
         if request_code == 100:
             if MyWebClient.mUploadMessage is not None:
@@ -30,7 +30,6 @@ class AlienAIApp(App):
         Window.keep_on = True 
         self.root = Widget()
         if platform == 'android':
-            # 🔴 اینڈرائیڈ 13 کی نئی پرمیشنز مانگنا
             request_permissions([
                 Permission.INTERNET, Permission.RECORD_AUDIO,
                 Permission.CAMERA, Permission.READ_EXTERNAL_STORAGE,
@@ -47,22 +46,22 @@ class AlienAIApp(App):
             self.webview = WebView(Activity)
             s = self.webview.getSettings()
             
-            # آواز اور فائلز کی سیٹنگز
+            # 🔴 آواز کی رکاوٹیں توڑنے کی فائنل سیٹنگز
             s.setJavaScriptEnabled(True)
             s.setDomStorageEnabled(True) 
             s.setDatabaseEnabled(True)
             s.setMediaPlaybackRequiresUserGesture(False) 
             s.setAllowFileAccess(True)
             s.setAllowContentAccess(True)
+            s.setAllowFileAccessFromFileURLs(True)      # آڈیو فائلز چلانے کے لیے
+            s.setAllowUniversalAccessFromFileURLs(True) # سرور کی آڈیو چلانے کے لیے
             s.setMixedContentMode(0) 
             
-            # 🔴 میڈیا آواز کو چالو کرنا
             Activity.setVolumeControlStream(3) 
             
             self.webview.setWebViewClient(WebViewClient())
             self.webview.setWebChromeClient(MyWebClient())
             
-            # ڈائریکٹ سرور لنک
             self.webview.loadUrl('https://aigrowthbox-ayesha-ai.hf.space')
             Activity.setContentView(self.webview)
 
