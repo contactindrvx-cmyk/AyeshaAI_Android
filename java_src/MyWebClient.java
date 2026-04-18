@@ -6,6 +6,7 @@ import android.webkit.WebView;
 import android.webkit.ValueCallback;
 import android.net.Uri;
 import android.content.Intent;
+import android.app.Activity;
 import org.kivy.android.PythonActivity;
 
 public class MyWebClient extends WebChromeClient {
@@ -21,7 +22,6 @@ public class MyWebClient extends WebChromeClient {
         });
     }
 
-    // 🟢 یہ وہ فنکشن ہے جو پلس بٹن دبانے پر ہر حال میں گیلری کھولے گا
     @Override
     public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
         if (mUploadMessage != null) {
@@ -29,14 +29,13 @@ public class MyWebClient extends WebChromeClient {
         }
         mUploadMessage = filePathCallback;
 
-        // گیلری اور فائلز کھولنے کا اصلی اینڈرائیڈ انٹینٹ
         Intent i = new Intent(Intent.ACTION_GET_CONTENT);
         i.addCategory(Intent.CATEGORY_OPENABLE);
-        i.setType("*/*"); // تصویر، آڈیو، سب کچھ سلیکٹ کرنے کے لیے
+        i.setType("image/*"); // صرف تصویروں کے لیے تاکہ سسٹم کنفیوز نہ ہو
 
-        Intent chooserIntent = Intent.createChooser(i, "Select File");
         try {
-            PythonActivity.mActivity.startActivityForResult(chooserIntent, 100);
+            // گیلری کھولنا
+            PythonActivity.mActivity.startActivityForResult(Intent.createChooser(i, "Select Picture"), 100);
         } catch (Exception e) {
             mUploadMessage = null;
             return false;
