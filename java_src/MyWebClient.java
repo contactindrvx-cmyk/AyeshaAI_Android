@@ -17,6 +17,7 @@ public class MyWebClient extends WebChromeClient {
         PythonActivity.mActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                // یہ لائن مائیک اور آواز کے تمام فیچرز کو ان لاک کرے گی
                 request.grant(request.getResources());
             }
         });
@@ -24,7 +25,6 @@ public class MyWebClient extends WebChromeClient {
 
     @Override
     public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
-        // اگر پہلے سے کوئی ریکویسٹ پھنسی ہوئی ہے، تو اسے کینسل کر کے لاک کھولیں
         if (mUploadMessage != null) {
             mUploadMessage.onReceiveValue(null);
         }
@@ -33,9 +33,10 @@ public class MyWebClient extends WebChromeClient {
         Intent i = new Intent(Intent.ACTION_GET_CONTENT);
         i.addCategory(Intent.CATEGORY_OPENABLE);
         i.setType("image/*");
+        i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true); 
 
         try {
-            PythonActivity.mActivity.startActivityForResult(Intent.createChooser(i, "Select Picture"), 100);
+            PythonActivity.mActivity.startActivityForResult(Intent.createChooser(i, "Select Pictures"), 100);
         } catch (Exception e) {
             mUploadMessage = null;
             return false;
@@ -43,23 +44,24 @@ public class MyWebClient extends WebChromeClient {
         return true;
     }
 
-    // 🟢 THE MASTER FIX: تصویر کو جاوا کے اندر ہی پروسیس کرنا تاکہ جام نہ ہو
     public static void handleUpload(int resultCode, Intent intent) {
         if (mUploadMessage == null) return;
         Uri[] results = null;
         try {
             if (resultCode == Activity.RESULT_OK && intent != null) {
-                String dataString = intent.getDataString();
-                if (dataString != null) {
-                    results = new Uri[]{Uri.parse(dataString)};
-                } else {
-                    results = WebChromeClient.FileChooserParams.parseResult(resultCode, intent);
+                if (intent.getClipData() != null) {
+                    int count = intent.getClipData().getItemCount();
+                    results = new Uri[count];
+                    for (int i = 0; i < count; i++) {
+                        results[i] = intent.getClipData().getItemAt(i).getUri();
+                    }
+                } else if (intent.getData() != null) {
+                    results = new Uri[]{intent.getData()};
                 }
             }
         } catch (Exception e) {
             results = null;
         }
-        // یہ لائن ویب سائٹ کو تصویر دیتی ہے اور پلس بٹن کا لاک کھولتی ہے
         mUploadMessage.onReceiveValue(results);
         mUploadMessage = null;
     }
