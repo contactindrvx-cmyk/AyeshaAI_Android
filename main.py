@@ -7,7 +7,7 @@ if platform == 'android':
     from jnius import autoclass
     from android.permissions import request_permissions, Permission
     from android.runnable import run_on_ui_thread
-    import android.activity
+    from android.activity import bind as activity_bind # 🔴 نیا بائنڈر جو گیلری کھولے گا
     
     WebView = autoclass('android.webkit.WebView')
     WebViewClient = autoclass('android.webkit.WebViewClient')
@@ -15,15 +15,21 @@ if platform == 'android':
     MyWebClient = autoclass('com.raza.alien.MyWebClient')
     FileChooserParams = autoclass('android.webkit.WebChromeClient$FileChooserParams')
     
-    # تصویر کو گیلری سے پکڑ کر ویب سائٹ کے پلس بٹن کو دینا
+    # 🔴 عائشہ کی آواز کے لیے تیسرے سرور کی پرمیشن
+    CookieManager = autoclass('android.webkit.CookieManager') 
+    
+    # 🟢 تصویر کو گیلری سے پکڑ کر ویب سائٹ کے پلس بٹن کو دینا
     def on_activity_result(request_code, result_code, intent):
         if request_code == 100:
             if MyWebClient.mUploadMessage is not None:
-                results = FileChooserParams.parseResult(result_code, intent)
-                MyWebClient.mUploadMessage.onReceiveValue(results)
+                try:
+                    results = FileChooserParams.parseResult(result_code, intent)
+                    MyWebClient.mUploadMessage.onReceiveValue(results)
+                except Exception:
+                    MyWebClient.mUploadMessage.onReceiveValue(None)
                 MyWebClient.mUploadMessage = None
                 
-    android.activity.bind(on_activity_result=on_activity_result)
+    activity_bind(on_activity_result=on_activity_result)
 
 class AlienAIApp(App):
     def build(self):
@@ -46,16 +52,21 @@ class AlienAIApp(App):
             self.webview = WebView(Activity)
             s = self.webview.getSettings()
             
-            # 🔴 آواز کی رکاوٹیں توڑنے کی فائنل سیٹنگز
             s.setJavaScriptEnabled(True)
             s.setDomStorageEnabled(True) 
             s.setDatabaseEnabled(True)
             s.setMediaPlaybackRequiresUserGesture(False) 
             s.setAllowFileAccess(True)
             s.setAllowContentAccess(True)
-            s.setAllowFileAccessFromFileURLs(True)      # آڈیو فائلز چلانے کے لیے
-            s.setAllowUniversalAccessFromFileURLs(True) # سرور کی آڈیو چلانے کے لیے
+            s.setAllowFileAccessFromFileURLs(True)
+            s.setAllowUniversalAccessFromFileURLs(True)
             s.setMixedContentMode(0) 
+            
+            # 🔴 آواز کا 100% پکا علاج (Cookies اور ہارڈویئر ایکسلریشن)
+            cookie_manager = CookieManager.getInstance()
+            cookie_manager.setAcceptCookie(True)
+            cookie_manager.setAcceptThirdPartyCookies(self.webview, True) # اس سے عائشہ کی آواز ان لاک ہوگی
+            self.webview.setLayerType(2, None) # آواز کو صاف چلانے کے لیے Hardware Acceleration
             
             Activity.setVolumeControlStream(3) 
             
