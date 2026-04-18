@@ -9,24 +9,32 @@ import android.content.Intent;
 import org.kivy.android.PythonActivity;
 
 public class MyWebClient extends WebChromeClient {
-    // تصویر اپلوڈ کا میسنجر
     public static ValueCallback<Uri[]> mUploadMessage;
 
     @Override
     public void onPermissionRequest(final PermissionRequest request) {
-        request.grant(request.getResources());
+        // 🔴 آواز اور مائیک کو "مین تھریڈ" پر پرمیشن دینا تاکہ اینڈرائیڈ میوٹ نہ کرے
+        PythonActivity.mActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                request.grant(request.getResources());
+            }
+        });
     }
 
-    // 🟢 یہ وہ جادو ہے جو آپ کا پلس (+) بٹن چالو کرے گا
     @Override
     public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
         if (mUploadMessage != null) {
             mUploadMessage.onReceiveValue(null);
         }
         mUploadMessage = filePathCallback;
-        Intent intent = fileChooserParams.createIntent();
+        
+        // 🔴 گیلری کھولنے کا فورس (Force) کمانڈ جو ہر حال میں کام کرے گا
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*"); // سب طرح کی تصویریں اور فائلیں سپورٹ کرے گا
+        
         try {
-            // گیلری کھولنے کی ریکویسٹ (کوڈ 100)
             PythonActivity.mActivity.startActivityForResult(intent, 100);
         } catch (Exception e) {
             mUploadMessage = null;
