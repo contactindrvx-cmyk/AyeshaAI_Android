@@ -13,8 +13,9 @@ export default {
       try {
         const { prompt } = await request.json();
         
-        // Gemini 3.1 Pro Latest (No strict schema to avoid 500 crashes)
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-latest:generateContent?key=${env.GEMINI_API_KEY}`;
+        // صرف gemini-3.1-pro استعمال کیا ہے، '-latest' ہٹا دیا ہے تاکہ کوئی ایرر نہ آئے
+        const targetModel = "gemini-3.1-pro";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${env.GEMINI_API_KEY}`;
 
         const aiResponse = await fetch(apiUrl, {
           method: "POST",
@@ -45,3 +46,4 @@ export default {
     return new Response("Mistri Backend 3.1 Pro Online", { headers: corsHeaders });
   }
 };
+                        
