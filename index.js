@@ -14,7 +14,7 @@ export default {
         const { prompt } = await request.json();
         
         // صرف gemini-3.1-pro استعمال کیا ہے، '-latest' ہٹا دیا ہے تاکہ کوئی ایرر نہ آئے
-        const targetModel = "gemini-3.1-pro";
+        const targetModel = "gemini-3.1-pro-preview";
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${env.GEMINI_API_KEY}`;
 
         const aiResponse = await fetch(apiUrl, {
